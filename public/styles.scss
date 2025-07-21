@@ -1,0 +1,114 @@
+// Variables
+$primary-color: #2a9d8f;
+$background-color: #f4f4f4;
+$text-color: #333;
+$link-color: darken($primary-color, 10%);
+$header-height: 60px;
+$footer-height: 40px;
+$sidebar-width: 200px;
+
+// Global resets & layout
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100vh; // lock to viewport
+    overflow: hidden; // prevent page scrollbars
+}
+
+body {
+    display: flex;
+    font-family: sans-serif;
+    color: $text-color;
+    background: $background-color;
+    line-height: 1.6;
+}
+
+// Sidebar
+.sidebar {
+    width: $sidebar-width;
+    background: $primary-color;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    height: 100%; // fill body height
+    overflow-y: auto; // scroll internally if needed
+
+    .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        user-select: none;
+        margin-bottom: 2rem;
+    }
+
+    nav {
+        display: flex;
+        flex-direction: column;
+
+        a {
+            color: white;
+            text-decoration: none;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            transition: color 0.2s;
+
+            &:hover {
+                color: $link-color;
+            }
+        }
+    }
+}
+
+// Content wrapper
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%; // fill body height
+    overflow: hidden; // no page scrollbars
+}
+
+// Header
+header {
+    background: $primary-color;
+    color: white;
+    height: $header-height;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+
+    h1 {
+        font-size: 1.5rem;
+        margin: 0;
+    }
+}
+
+// Main (scrolls internally)
+main {
+    flex: 1;
+    overflow-y: auto; // internal scroll if content too tall
+    padding: 2rem 1rem;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 1rem; // keep your spacing
+}
+
+// Footer
+footer {
+    height: $footer-height;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: darken($primary-color, 5%);
+    color: white;
+    font-size: 0.9rem;
+    padding: 0 1rem;
+}

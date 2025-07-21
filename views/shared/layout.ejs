@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>
+        <%= appData?.appName %>
+    </title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <div class="sidebar">
+        <h1 class="logo">
+            <%= appData?.appName %>
+        </h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+        </nav>
+    </div>
+
+    <div class="content">
+        <header>
+        </header>
+
+        <main>
+            <%- body %> <!-- View content injected here -->
+        </main>
+
+        <footer>
+            <p>&copy; <%= new Date().getFullYear() %>
+                    <%= appData?.appName %>
+            </p>
+        </footer>
+    </div>
+</body>
+
+</html>
