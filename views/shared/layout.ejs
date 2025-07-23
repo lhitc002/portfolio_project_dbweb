@@ -6,7 +6,7 @@
     <title>
         <%= appData?.appName %>
     </title>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/main.css">
 </head>
 
 <body>
@@ -16,12 +16,38 @@
         </h1>
         <nav>
             <a href="/">Home</a>
-            <a href="/about">About</a>
+            <a href="/collections">Collections</a>
+            <a href="/story">Stories</a>
         </nav>
     </div>
 
     <div class="content">
-        <header>
+        <header class="topbar">
+            <div class="topbar-content">
+                <div></div>
+                <a href="/search" class="search-icon" title="Search">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </a>
+                <div class="auth-buttons">
+                    <% if (session.userId) { %>
+                        <span class="username">Hello,
+                            <a href="/users/">
+                                <%= session.username %>
+                            </a>
+                        </span>
+                        <form action="/auth/logout" method="post" style="display:inline">
+                            <button type="submit" class="btn">Logout</button>
+                        </form>
+                        <% } else { %>
+                            <a href="/auth/login" class="btn">Login</a>
+                            <a href="/auth/register" class="btn">Register</a>
+                            <% } %>
+                </div>
+            </div>
         </header>
 
         <main>

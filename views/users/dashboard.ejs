@@ -1,0 +1,206 @@
+<div class="user-dashboard">
+    <h1>
+        <%= user.username %>'s Dashboard
+    </h1>
+
+    <!-- User Details Box -->
+    <div class="user-details-box">
+        <h2>User Details</h2>
+        <div class="user-info">
+            <p><strong>Username:</strong>
+                <%= user.username %>
+            </p>
+            <p><strong>Email:</strong>
+                <%= user.email %>
+            </p>
+            <p><strong>Member since:</strong>
+                <%= new Date(user.created_at).toLocaleDateString() %>
+            </p>
+        </div>
+    </div>
+
+    <!-- Stories Box -->
+    <div class="stories-box">
+        <h2>My Stories</h2>
+        <% if (stories && stories.length> 0) { %>
+            <div class="stories-list">
+                <% stories.forEach(story=> { %>
+                    <div class="story-item">
+                        <h3>
+                            <a href="/story/<%= user.id %>/<%= story.id %>">
+                                <%= story.title %>
+                            </a>
+                        </h3>
+                        <% if (story.synopsis) { %>
+                            <p class="synopsis">
+                                <%= story.synopsis.substring(0, 150) %>
+                                    <% if (story.synopsis.length> 150) { %>...<% } %>
+                            </p>
+                            <% } %>
+                                <div class="story-stats">
+                                    <span class="chapters">Chapters: <%= story.chapter_count || 0 %></span>
+                                    <% if (story.avg_rating) { %>
+                                        <span class="rating">★ <%= Number(story.avg_rating).toFixed(1) %> (<%=
+                                                    story.rating_count %> reviews)</span>
+                                        <% } %>
+                                            <% if (story.favorite_count> 0) { %>
+                                                <span class="favorites">❤ <%= story.favorite_count %> favorites</span>
+                                                <% } %>
+                                </div>
+                                <div class="story-dates">
+                                    <span class="created">Created: <%= new Date(story.created_at).toLocaleDateString()
+                                            %></span>
+                                    <span class="updated">Updated: <%= new Date(story.updated_at).toLocaleDateString()
+                                            %></span>
+                                </div>
+                    </div>
+                    <% }) %>
+            </div>
+            <% } else { %>
+                <p class="no-content">This user hasn't created any stories yet.</p>
+                <% } %>
+    </div>
+
+    <!-- Collections Box -->
+    <div class="collections-box">
+        <h2>My Collections</h2>
+        <% if (collections && collections.length> 0) { %>
+            <div class="collections-list">
+                <% collections.forEach(collection=> { %>
+                    <div class="collection-item">
+                        <h3>
+                            <a href="/collections/<%= user.id %>/<%= collection.id %>">
+                                <%= collection.title %>
+                            </a>
+                        </h3>
+                        <% if (collection.description) { %>
+                            <p class="description">
+                                <%= collection.description.substring(0, 100) %>
+                                    <% if (collection.description.length> 100) { %>...<% } %>
+                            </p>
+                            <% } %>
+                                <div class="collection-stats">
+                                    <span class="story-count">Stories: <%= collection.story_count || 0 %></span>
+                                    <span class="created">Created: <%= new
+                                            Date(collection.created_at).toLocaleDateString() %></span>
+                                </div>
+                    </div>
+                    <% }) %>
+            </div>
+            <% } else { %>
+                <p class="no-content">This user hasn't created any collections yet.</p>
+                <% } %>
+    </div>
+</div>
+
+<style>
+    .user-dashboard {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .user-details-box,
+    .stories-box,
+    .collections-box {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+
+    .user-details-box h2,
+    .stories-box h2,
+    .collections-box h2 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+    }
+
+    .user-info p {
+        margin: 10px 0;
+        font-size: 16px;
+    }
+
+    .story-item,
+    .collection-item {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .story-item h3,
+    .collection-item h3 {
+        margin: 0 0 10px 0;
+    }
+
+    .story-item h3 a,
+    .collection-item h3 a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .story-item h3 a:hover,
+    .collection-item h3 a:hover {
+        text-decoration: underline;
+    }
+
+    .synopsis,
+    .description {
+        color: #666;
+        margin: 10px 0;
+        line-height: 1.4;
+    }
+
+    .story-stats,
+    .collection-stats {
+        display: flex;
+        gap: 15px;
+        margin: 10px 0;
+        font-size: 14px;
+        flex-wrap: wrap;
+    }
+
+    .story-stats span,
+    .collection-stats span {
+        background: #e9ecef;
+        padding: 4px 8px;
+        border-radius: 4px;
+        color: #495057;
+    }
+
+    .story-dates {
+        font-size: 12px;
+        color: #888;
+        margin-top: 10px;
+    }
+
+    .story-dates span {
+        margin-right: 15px;
+    }
+
+    .no-content {
+        color: #666;
+        font-style: italic;
+        margin-bottom: 15px;
+    }
+
+    @media (max-width: 768px) {
+
+        .story-stats,
+        .collection-stats {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .story-dates span {
+            display: block;
+            margin-right: 0;
+            margin-bottom: 5px;
+        }
+    }
+</style>
