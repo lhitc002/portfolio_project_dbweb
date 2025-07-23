@@ -1,0 +1,125 @@
+.chapter-reader {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 6px 15px rgba($text-color, 0.1);
+    padding: 1.5rem 2rem;
+    color: $text-color;
+    line-height: 1.5;
+
+    .chapter-header {
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid $primary-color;
+        padding-bottom: 0.5rem;
+
+        .breadcrumb {
+            font-size: 0.9rem;
+            color: color.scale($text-color, $lightness: -40%);
+            margin-bottom: 0.3rem;
+
+            a {
+                color: $primary-color;
+                text-decoration: none;
+                transition: color 0.2s;
+
+                &:hover {
+                    color: color.scale($primary-color, $lightness: -15%);
+                    text-decoration: underline;
+                }
+            }
+        }
+
+        h1 {
+            font-weight: 700;
+            font-size: 2rem;
+            color: $primary-color;
+        }
+
+        .story-title {
+            font-size: 0.95rem;
+            color: color.scale($text-color, $lightness: -30%);
+            margin-top: 0.3rem;
+
+            strong {
+                color: $primary-color;
+            }
+        }
+    }
+
+    .chapter-navigation {
+        display: flex;
+        justify-content: space-between;
+        margin: 1rem 0;
+        gap: 1rem;
+
+        a.nav-button {
+            background: $primary-color;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background-color 0.3s ease;
+
+            &.prev {
+                background: color.scale($primary-color, $lightness: 5%);
+            }
+
+            &.next {
+                background: color.scale($primary-color, $lightness: -5%);
+            }
+
+            &:hover {
+                background: color.scale($primary-color, $lightness: -10%);
+            }
+        }
+    }
+
+    .chapter-content {
+        margin-bottom: 2rem;
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: $text-color;
+
+        p {
+            margin-bottom: 1rem;
+        }
+    }
+
+    .chapter-info {
+        font-size: 0.85rem;
+        color: color.scale($text-color, $lightness: -40%);
+        margin-bottom: 2rem;
+    }
+
+    .comments-section {
+        border-top: 2px solid $primary-color;
+        padding-top: 1rem;
+
+        h3 {
+            color: $primary-color;
+            margin-bottom: 1rem;
+        }
+
+        .comment {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid color.scale($text-color, $lightness: 80%);
+
+            .comment-header {
+                display: flex;
+                justify-content: space-between;
+                font-weight: 600;
+                color: color.scale($text-color, $lightness: -20%);
+                margin-bottom: 0.25rem;
+            }
+
+            .comment-content {
+                font-size: 0.95rem;
+                color: $text-color;
+            }
+        }
+    }
+}

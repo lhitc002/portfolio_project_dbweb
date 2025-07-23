@@ -1,12 +1,3 @@
-// Variables
-$primary-color: #2a9d8f;
-$background-color: #f4f4f4;
-$text-color: #333;
-$link-color: darken($primary-color, 10%);
-$header-height: 60px;
-$footer-height: 40px;
-$sidebar-width: 200px;
-
 // Global resets & layout
 * {
     margin: 0;
@@ -16,8 +7,8 @@ $sidebar-width: 200px;
 
 html,
 body {
-    height: 100vh; // lock to viewport
-    overflow: hidden; // prevent page scrollbars
+    height: 100vh;
+    overflow: hidden;
 }
 
 body {
@@ -36,8 +27,8 @@ body {
     display: flex;
     flex-direction: column;
     padding: 1rem;
-    height: 100%; // fill body height
-    overflow-y: auto; // scroll internally if needed
+    height: 100%;
+    overflow-y: auto;
 
     .logo {
         font-size: 1.5rem;
@@ -69,8 +60,8 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    height: 100%; // fill body height
-    overflow: hidden; // no page scrollbars
+    height: 100%;
+    overflow: hidden;
 }
 
 // Header
@@ -92,12 +83,12 @@ header {
 // Main (scrolls internally)
 main {
     flex: 1;
-    overflow-y: auto; // internal scroll if content too tall
+    overflow-y: auto;
     padding: 2rem 1rem;
     background: white;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin: 1rem; // keep your spacing
+    margin: 1rem;
 }
 
 // Footer
@@ -107,8 +98,73 @@ footer {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: darken($primary-color, 5%);
+    background: color.scale($primary-color, $lightness: -5%);
     color: white;
     font-size: 0.9rem;
     padding: 0 1rem;
+}
+
+.topbar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+    border-bottom: 1px solid #ccc;
+
+    .topbar-content {
+        display: flex;
+    }
+}
+
+.search-icon {
+    font-size: 1.2rem;
+    text-decoration: none;
+    margin-right: 1.2rem;
+}
+
+// Story list/cards
+.story-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.story-card {
+    background: white;
+    outline: 1px solid rgba($text-color, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba($text-color, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-decoration: none;
+
+    &:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 8px 12px rgba($text-color, 0.15);
+        outline: 2px solid $primary-color;
+        background: color.scale($background-color, $lightness: 5%);
+    }
+
+    h3 {
+        margin-bottom: 0.5rem;
+        color: $primary-color;
+        text-decoration: none;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    p {
+        flex: 1;
+        margin-bottom: 0.75rem;
+        color: $text-color;
+    }
+
+    small {
+        font-size: 0.85rem;
+        color: color.scale($text-color, $lightness: -20%);
+    }
 }

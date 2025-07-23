@@ -1,0 +1,645 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100vh;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  font-family: sans-serif;
+  color: #333;
+  background: #f4f4f4;
+  line-height: 1.6;
+}
+
+.sidebar {
+  width: 200px;
+  background: #2a9d8f;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  height: 100%;
+  overflow-y: auto;
+}
+.sidebar .logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  margin-bottom: 2rem;
+}
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+}
+.sidebar nav a {
+  color: white;
+  text-decoration: none;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+.sidebar nav a:hover {
+  color: rgb(37.8, 141.3, 128.7);
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+header {
+  background: #2a9d8f;
+  color: white;
+  height: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+}
+header h1 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem 1rem;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 1rem;
+}
+
+footer {
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(39.9, 149.15, 135.85);
+  color: white;
+  font-size: 0.9rem;
+  padding: 0 1rem;
+}
+
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
+  border-bottom: 1px solid #ccc;
+}
+.topbar .topbar-content {
+  display: flex;
+}
+
+.search-icon {
+  font-size: 1.2rem;
+  text-decoration: none;
+  margin-right: 1.2rem;
+}
+
+.story-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.story-card {
+  background: white;
+  outline: 1px solid rgba(51, 51, 51, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(51, 51, 51, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-decoration: none;
+}
+.story-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 12px rgba(51, 51, 51, 0.15);
+  outline: 2px solid #2a9d8f;
+  background: rgb(244.55, 244.55, 244.55);
+}
+.story-card h3 {
+  margin-bottom: 0.5rem;
+  color: #2a9d8f;
+  text-decoration: none;
+}
+.story-card a {
+  text-decoration: none;
+}
+.story-card p {
+  flex: 1;
+  margin-bottom: 0.75rem;
+  color: #333;
+}
+.story-card small {
+  font-size: 0.85rem;
+  color: rgb(40.8, 40.8, 40.8);
+}
+
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.search-form .search-input {
+  flex: 1 1 300px;
+  padding: 0.5rem;
+  border: 1px solid rgb(132.6, 132.6, 132.6);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+.search-form .filter-label {
+  align-self: center;
+  margin-left: 1rem;
+}
+.search-form .filter-select {
+  min-width: 180px;
+  height: 100px;
+  border: 1px solid rgb(132.6, 132.6, 132.6);
+  border-radius: 4px;
+  padding: 0.3rem;
+  font-size: 0.9rem;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+.search-form .search-button {
+  background: #2a9d8f;
+  border: none;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.search-form .search-button:hover {
+  background: rgb(35.7, 133.45, 121.55);
+}
+
+.search-results {
+  border-top: 2px solid #2a9d8f;
+}
+.search-results .tabs {
+  display: flex;
+  border-bottom: 2px solid rgb(58.7105527638, 202.4894472362, 184.9859296482);
+  margin-bottom: 1rem;
+}
+.search-results .tabs .tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: rgb(45.9, 45.9, 45.9);
+  transition: border-color 0.3s, color 0.3s;
+}
+.search-results .tabs .tab-btn.active {
+  border-color: #2a9d8f;
+  color: #2a9d8f;
+}
+.search-results .tabs .tab-btn:hover:not(.active) {
+  color: #2a9d8f;
+}
+.search-results .results-section {
+  display: none;
+}
+.search-results .results-section.active {
+  display: block;
+}
+.search-results .results-section h3 {
+  margin-bottom: 0.75rem;
+  color: #2a9d8f;
+  border-bottom: 1px solid rgb(132.3190954774, 222.1809045226, 211.2412060302);
+  padding-bottom: 0.3rem;
+}
+.search-results .results-section ul {
+  list-style: none;
+}
+.search-results .results-section ul li {
+  margin-bottom: 0.5rem;
+}
+.search-results .results-section ul li a {
+  text-decoration: none;
+  color: #333;
+  transition: color 0.2s;
+}
+.search-results .results-section ul li a:hover {
+  color: #2a9d8f;
+  text-decoration: underline;
+}
+.search-results .results-section p {
+  color: rgb(35.7, 35.7, 35.7);
+  font-style: italic;
+}
+
+.collections-page {
+  max-width: 800px;
+  margin: 2rem auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(51, 51, 51, 0.1);
+  padding: 2rem;
+  color: #333;
+}
+.collections-page h2 {
+  font-size: 1.75rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #2a9d8f;
+  padding-bottom: 0.5rem;
+}
+.collections-page ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 2rem;
+}
+.collections-page ul li {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+.collections-page ul li a {
+  color: #2a9d8f;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.collections-page ul li a:hover {
+  color: rgb(37.8, 141.3, 128.7);
+  text-decoration: underline;
+}
+.collections-page ul li span {
+  color: rgb(35.7, 35.7, 35.7);
+}
+.collections-page .button {
+  display: inline-block;
+  background: #2a9d8f;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+.collections-page .button:hover {
+  background: rgb(37.8, 141.3, 128.7);
+}
+
+.collection-view {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 6px 12px rgba(51, 51, 51, 0.1);
+}
+.collection-view .collection-header {
+  margin-bottom: 2rem;
+}
+.collection-view .collection-header h2 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+  margin-right: 0.5rem;
+}
+.collection-view .collection-header p {
+  font-size: 1rem;
+  color: rgb(40.8, 40.8, 40.8);
+}
+.collection-view .story-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+.collection-view .empty-msg {
+  font-style: italic;
+  color: rgb(30.6, 30.6, 30.6);
+  margin-bottom: 2rem;
+}
+.collection-view .back-link {
+  margin-top: 2rem;
+  text-align: left;
+}
+.collection-view .back-link .button {
+  background: #2a9d8f;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+}
+.collection-view .back-link .button:hover {
+  background: rgb(37.8, 141.3, 128.7);
+}
+
+.story-detail {
+  max-width: 800px;
+  margin: 2rem auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(51, 51, 51, 0.1);
+  padding: 2rem;
+  color: #333;
+}
+.story-detail h1 {
+  color: #2a9d8f;
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+.story-detail .author {
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+.story-detail .author strong {
+  color: #2a9d8f;
+}
+.story-detail .synopsis {
+  margin-bottom: 2rem;
+}
+.story-detail .synopsis h3 {
+  color: #2a9d8f;
+  border-bottom: 2px solid #2a9d8f;
+  padding-bottom: 0.3rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+.story-detail .synopsis p {
+  line-height: 1.5;
+  color: rgb(40.8, 40.8, 40.8);
+}
+.story-detail .story-stats {
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+  color: rgb(35.7, 35.7, 35.7);
+  display: flex;
+  gap: 1.5rem;
+}
+.story-detail .story-stats .rating {
+  font-weight: 600;
+  color: #2a9d8f;
+}
+.story-detail .story-stats span {
+  white-space: nowrap;
+}
+.story-detail .chapters h3 {
+  color: #2a9d8f;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  border-bottom: 2px solid #2a9d8f;
+  padding-bottom: 0.3rem;
+}
+.story-detail .chapters .chapter-list {
+  list-style: decimal inside;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+.story-detail .chapters .chapter-list li {
+  margin-bottom: 0.7rem;
+  font-size: 1rem;
+}
+.story-detail .chapters .chapter-list li a {
+  color: rgb(37.8, 141.3, 128.7);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.story-detail .chapters .chapter-list li a:hover {
+  color: #2a9d8f;
+  text-decoration: underline;
+}
+.story-detail .chapters .chapter-list li .chapter-date {
+  font-size: 0.8rem;
+  color: rgb(30.6, 30.6, 30.6);
+  margin-left: 0.5rem;
+}
+.story-detail .chapters p {
+  color: rgb(30.6, 30.6, 30.6);
+  font-style: italic;
+}
+
+.chapter-reader {
+  max-width: 800px;
+  margin: 2rem auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 6px 15px rgba(51, 51, 51, 0.1);
+  padding: 1.5rem 2rem;
+  color: #333;
+  line-height: 1.5;
+}
+.chapter-reader .chapter-header {
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #2a9d8f;
+  padding-bottom: 0.5rem;
+}
+.chapter-reader .chapter-header .breadcrumb {
+  font-size: 0.9rem;
+  color: rgb(30.6, 30.6, 30.6);
+  margin-bottom: 0.3rem;
+}
+.chapter-reader .chapter-header .breadcrumb a {
+  color: #2a9d8f;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.chapter-reader .chapter-header .breadcrumb a:hover {
+  color: rgb(35.7, 133.45, 121.55);
+  text-decoration: underline;
+}
+.chapter-reader .chapter-header h1 {
+  font-weight: 700;
+  font-size: 2rem;
+  color: #2a9d8f;
+}
+.chapter-reader .chapter-header .story-title {
+  font-size: 0.95rem;
+  color: rgb(35.7, 35.7, 35.7);
+  margin-top: 0.3rem;
+}
+.chapter-reader .chapter-header .story-title strong {
+  color: #2a9d8f;
+}
+.chapter-reader .chapter-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin: 1rem 0;
+  gap: 1rem;
+}
+.chapter-reader .chapter-navigation a.nav-button {
+  background: #2a9d8f;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.3s ease;
+}
+.chapter-reader .chapter-navigation a.nav-button.prev {
+  background: rgb(45.2819095477, 169.2680904523, 154.174120603);
+}
+.chapter-reader .chapter-navigation a.nav-button.next {
+  background: rgb(39.9, 149.15, 135.85);
+}
+.chapter-reader .chapter-navigation a.nav-button:hover {
+  background: rgb(37.8, 141.3, 128.7);
+}
+.chapter-reader .chapter-content {
+  margin-bottom: 2rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #333;
+}
+.chapter-reader .chapter-content p {
+  margin-bottom: 1rem;
+}
+.chapter-reader .chapter-info {
+  font-size: 0.85rem;
+  color: rgb(30.6, 30.6, 30.6);
+  margin-bottom: 2rem;
+}
+.chapter-reader .comments-section {
+  border-top: 2px solid #2a9d8f;
+  padding-top: 1rem;
+}
+.chapter-reader .comments-section h3 {
+  color: #2a9d8f;
+  margin-bottom: 1rem;
+}
+.chapter-reader .comments-section .comment {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgb(214.2, 214.2, 214.2);
+}
+.chapter-reader .comments-section .comment .comment-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  color: rgb(40.8, 40.8, 40.8);
+  margin-bottom: 0.25rem;
+}
+.chapter-reader .comments-section .comment .comment-content {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.collections-page {
+  max-width: 800px;
+  margin: 2rem auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(51, 51, 51, 0.1);
+  padding: 2rem;
+  color: #333;
+}
+.collections-page h2 {
+  font-size: 1.75rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #2a9d8f;
+  padding-bottom: 0.5rem;
+}
+.collections-page ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 2rem;
+}
+.collections-page ul li {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+.collections-page ul li a {
+  color: #2a9d8f;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.collections-page ul li a:hover {
+  color: rgb(37.8, 141.3, 128.7);
+  text-decoration: underline;
+}
+.collections-page ul li span {
+  color: rgb(35.7, 35.7, 35.7);
+}
+.collections-page .button {
+  display: inline-block;
+  background: #2a9d8f;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+.collections-page .button:hover {
+  background: rgb(37.8, 141.3, 128.7);
+}
+
+.collection-view {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 6px 12px rgba(51, 51, 51, 0.1);
+}
+.collection-view .collection-header {
+  margin-bottom: 2rem;
+}
+.collection-view .collection-header h2 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+  margin-right: 0.5rem;
+}
+.collection-view .collection-header p {
+  font-size: 1rem;
+  color: rgb(40.8, 40.8, 40.8);
+}
+.collection-view .story-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+.collection-view .empty-msg {
+  font-style: italic;
+  color: rgb(30.6, 30.6, 30.6);
+  margin-bottom: 2rem;
+}
+.collection-view .back-link {
+  margin-top: 2rem;
+  text-align: left;
+}
+.collection-view .back-link .button {
+  background: #2a9d8f;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+}
+.collection-view .back-link .button:hover {
+  background: rgb(37.8, 141.3, 128.7);
+}/*# sourceMappingURL=main.css.map */

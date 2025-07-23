@@ -1,0 +1,113 @@
+.search-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+
+    .search-input {
+        flex: 1 1 300px;
+        padding: 0.5rem;
+        border: 1px solid color.scale($text-color, $lightness: 40%);
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+
+    .filter-label {
+        align-self: center;
+        margin-left: 1rem;
+    }
+
+    .filter-select {
+        min-width: 180px;
+        height: 100px;
+        border: 1px solid color.scale($text-color, $lightness: 40%);
+        border-radius: 4px;
+        padding: 0.3rem;
+        font-size: 0.9rem;
+        user-select: none;
+    }
+
+    .search-button {
+        background: $primary-color;
+        border: none;
+        color: white;
+        padding: 0.6rem 1.2rem;
+        font-weight: bold;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s;
+
+        &:hover {
+            background: color.scale($primary-color, $lightness: -15%);
+        }
+    }
+}
+
+.search-results {
+    border-top: 2px solid $primary-color;
+
+    .tabs {
+        display: flex;
+        border-bottom: 2px solid color.scale($primary-color, $lightness: 20%);
+        margin-bottom: 1rem;
+
+        .tab-btn {
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 0.75rem 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: color.scale($text-color, $lightness: -10%);
+            transition: border-color 0.3s, color 0.3s;
+
+            &.active {
+                border-color: $primary-color;
+                color: $primary-color;
+            }
+
+            &:hover:not(.active) {
+                color: $primary-color;
+            }
+        }
+    }
+
+    .results-section {
+        display: none;
+
+        &.active {
+            display: block;
+        }
+
+        h3 {
+            margin-bottom: 0.75rem;
+            color: $primary-color;
+            border-bottom: 1px solid color.scale($primary-color, $lightness: 50%);
+            padding-bottom: 0.3rem;
+        }
+
+        ul {
+            list-style: none;
+
+            li {
+                margin-bottom: 0.5rem;
+
+                a {
+                    text-decoration: none;
+                    color: $text-color;
+                    transition: color 0.2s;
+
+                    &:hover {
+                        color: $primary-color;
+                        text-decoration: underline;
+                    }
+                }
+            }
+        }
+
+        p {
+            color: color.scale($text-color, $lightness: -30%);
+            font-style: italic;
+        }
+    }
+}

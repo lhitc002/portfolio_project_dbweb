@@ -1,0 +1,103 @@
+.story-detail {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba($text-color, 0.1);
+    padding: 2rem;
+    color: $text-color;
+
+    h1 {
+        color: $primary-color;
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+
+    .author {
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+
+        strong {
+            color: $primary-color;
+        }
+    }
+
+    .synopsis {
+        margin-bottom: 2rem;
+
+        h3 {
+            color: $primary-color;
+            border-bottom: 2px solid $primary-color;
+            padding-bottom: 0.3rem;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        p {
+            line-height: 1.5;
+            color: color.scale($text-color, $lightness: -20%);
+        }
+    }
+
+    .story-stats {
+        margin-bottom: 2rem;
+        font-size: 0.9rem;
+        color: color.scale($text-color, $lightness: -30%);
+        display: flex;
+        gap: 1.5rem;
+
+        .rating {
+            font-weight: 600;
+            color: $primary-color;
+        }
+
+        span {
+            white-space: nowrap;
+        }
+    }
+
+    .chapters {
+        h3 {
+            color: $primary-color;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            border-bottom: 2px solid $primary-color;
+            padding-bottom: 0.3rem;
+        }
+
+        .chapter-list {
+            list-style: decimal inside;
+            padding-left: 0;
+            margin-bottom: 0;
+
+            li {
+                margin-bottom: 0.7rem;
+                font-size: 1rem;
+
+                a {
+                    color: $link-color;
+                    text-decoration: none;
+                    font-weight: 500;
+                    transition: color 0.2s;
+
+                    &:hover {
+                        color: $primary-color;
+                        text-decoration: underline;
+                    }
+                }
+
+                .chapter-date {
+                    font-size: 0.8rem;
+                    color: color.scale($text-color, $lightness: -40%);
+                    margin-left: 0.5rem;
+                }
+            }
+        }
+
+        p {
+            color: color.scale($text-color, $lightness: -40%);
+            font-style: italic;
+        }
+    }
+}

@@ -1,0 +1,115 @@
+.collections-page {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba($text-color, 0.1);
+    padding: 2rem;
+    color: $text-color;
+
+    h2 {
+        font-size: 1.75rem;
+        color: $text-color;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid $primary-color;
+        padding-bottom: 0.5rem;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 2rem;
+
+        li {
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            line-height: 1.4;
+
+            a {
+                color: $primary-color;
+                font-weight: 600;
+                text-decoration: none;
+                transition: color 0.2s;
+
+                &:hover {
+                    color: color.scale($primary-color, $lightness: -10%);
+                    text-decoration: underline;
+                }
+            }
+
+            span {
+                color: color.scale($text-color, $lightness: -30%);
+            }
+        }
+    }
+
+    .button {
+        display: inline-block;
+        background: $primary-color;
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background-color 0.3s;
+
+        &:hover {
+            background: color.scale($primary-color, $lightness: -10%);
+        }
+    }
+}
+
+.collection-view {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 6px 12px rgba($text-color, 0.1);
+
+    .collection-header {
+        margin-bottom: 2rem;
+
+        h2 {
+            font-size: 2rem;
+            color: $text-color;
+            margin-bottom: 0.5rem;
+            margin-right: 0.5rem;
+        }
+
+        p {
+            font-size: 1rem;
+            color: color.scale($text-color, $lightness: -20%);
+        }
+    }
+
+    .story-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .empty-msg {
+        font-style: italic;
+        color: color.scale($text-color, $lightness: -40%);
+        margin-bottom: 2rem;
+    }
+
+    .back-link {
+        margin-top: 2rem;
+        text-align: left;
+
+        .button {
+            background: $primary-color;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+
+            &:hover {
+                background: color.scale($primary-color, $lightness: -10%);
+            }
+        }
+    }
+}
