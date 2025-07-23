@@ -1,0 +1,30 @@
+<h1>Stories</h1>
+<div class="stories-grid">
+    <% if (stories && stories.length> 0) { %>
+        <% stories.forEach(story=> { %>
+            <div class="story-card">
+                <h3><a href="/story/<%= story.user_id %>/<%= story.id %>">
+                        <%= story.title %>
+                    </a></h3>
+                <p class="author">by <%= story.username %>
+                </p>
+                <p class="synopsis">
+                    <%= story.synopsis || 'No synopsis available' %>
+                </p>
+                <div class="story-stats">
+                    <span class="chapters">
+                        <%= story.chapter_count %> chapters
+                    </span>
+                    <% if (story.avg_rating) { %>
+                        <span class="rating">★ <%= Number(story.avg_rating).toFixed(1) %> (<%= story.rating_count %>
+                                    )</span>
+                        <% } %>
+                </div>
+                <p class="updated">Updated: <%= new Date(story.updated_at).toLocaleDateString() %>
+                </p>
+            </div>
+            <% }) %>
+                <% } else { %>
+                    <p>No stories available.</p>
+                    <% } %>
+</div>
