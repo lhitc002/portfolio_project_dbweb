@@ -1,4 +1,5 @@
 const mysql = require('mysql2');
+const logger = require('../logger');
 
 const db = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
@@ -8,16 +9,27 @@ const db = mysql.createConnection({
 });
 
 db.connect((err) => {
-    if (err) throw err;
-    console.log('Connected to database');
+    if (err) {
+        logger.error('DB Connection error', { error: err });
+        throw err;
+    }
+    logger.info('DB Connected');
 });
 
-// Promisify the query method
-const query = (sql, params) => {
+const query = (sql, params = []) => {
+    logger.debug('DB Executing', { sql, params });
     return new Promise((resolve, reject) => {
         db.query(sql, params, (err, results) => {
-            if (err) reject(err);
-            else resolve(results);
+            if (err) {
+                logger.error('DB Query error', {
+                    code: err.code,
+                    message: err.sqlMessage,
+                    sql,
+                    params
+                });
+                return reject(err);
+            }
+            resolve(results);
         });
     });
 };
