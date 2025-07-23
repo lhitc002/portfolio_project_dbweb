@@ -1,0 +1,17 @@
+<div class="collections-page">
+    <h2>All Collections</h2>
+
+
+    <ul>
+        <% collections.forEach(col=> { %>
+            <li>
+                <a href="/collections/<%= col.user_id %>/<%= col.id %>">
+                    <%= col.title %>
+                </a>
+                (<%= col.count %> stories)
+            </li>
+            <% }) %>
+    </ul>
+
+    <a href="/collections/list" class="button">Browse All Collections</a>
+</div>

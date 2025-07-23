@@ -1,0 +1,31 @@
+<div class="collection-view">
+    <header class="collection-header">
+        <h2>
+            <%= collection.title %>
+        </h2>
+        <p>
+            <%= collection.description %>
+        </p>
+    </header>
+
+    <% if (stories.length> 0) { %>
+        <div class="story-list">
+            <% stories.forEach(story=> { %>
+                <div class="story-card">
+                    <a href="/story/<%= story.user_id %>/<%= story.id %>">
+                        <h3>
+                            <%= story.title %>
+                        </h3>
+                    </a>
+                    <small>Posted on <%= new Date(story.created_at).toLocaleDateString() %></small>
+                </div>
+                <% }) %>
+        </div>
+        <% } else { %>
+            <p class="empty-msg">No stories in this collection yet.</p>
+            <% } %>
+
+                <div class="back-link">
+                    <a href="/collections" class="button">← Back to Collections</a>
+                </div>
+</div>
