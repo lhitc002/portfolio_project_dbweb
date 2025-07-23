@@ -1,4 +1,5 @@
 const { query } = require('../config/db');
+const logger = require('../logger');
 
 class QueryBuilder {
     constructor(table) {
@@ -88,27 +89,19 @@ class QueryBuilder {
         return this;
     }
 
-    // Build and execute\  
+    // Build and execute 
     async get() {
-        let sql = `SELECT ${this.selectFields} FROM ${this.table}`;
+        const sql = [
+            `SELECT ${this.selectFields} FROM ${this.table}`,
+            ...this.joinClauses,                                         // JOINs
+            this.whereConditions.length && `WHERE ${this.whereConditions.join(' AND ')}`,
+            this.groupByFields.length && `GROUP BY ${this.groupByFields.join(', ')}`,
+            this.orderByField && `ORDER BY ${this.orderByField} ${this.orderDirection}`,
+            this.limitCount != null && `LIMIT ${this.limitCount}`
+        ].filter(Boolean).join(' ');
 
-        if (this.joinClauses.length) {
-            sql += ' ' + this.joinClauses.join(' ');
-        }
-        if (this.whereConditions.length) {
-            sql += ' WHERE ' + this.whereConditions.join(' AND ');
-        }
-        if (this.groupByFields.length) {
-            sql += ' GROUP BY ' + this.groupByFields.join(', ');
-        }
-        if (this.orderByField) {
-            sql += ` ORDER BY ${this.orderByField} ${this.orderDirection}`;
-        }
-        if (this.limitCount != null) {
-            sql += ` LIMIT ${this.limitCount}`;
-        }
-
-        return await query(sql, this.whereParams);
+        logger.debug('QueryBuilder.get()', { sql, params: this.whereParams });
+        return query(sql, this.whereParams);
     }
 
     async insertAndGet() {
@@ -121,11 +114,17 @@ class QueryBuilder {
         const placeholders = keys.map(() => '?').join(', ');
         const sql = `INSERT INTO ${this.table} (${columns}) VALUES (${placeholders})`;
 
+        logger.debug('QueryBuilder.insertAndGet()', { sql, values });
         try {
             const result = await query(sql, values);
             // MySQL returns { insertId: ... } on INSERT
-            return { id: result.insertId }; // Assume primary key is 'id'
+            return { id: result.insertId }; // Assuming the primary key is 'id'
         } catch (err) {
+            logger.error('QueryBuilder.insertAndGet() failed', {
+                sql,
+                values,
+                error: err.message
+            });
             err.message = `Query failed: ${sql} | Params: ${values} | Error: ${err.message}`;
             throw err;
         }
