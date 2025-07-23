@@ -1,1 +1,21 @@
-test
+<h2>Recently Uploaded Stories</h2>
+
+<div class="story-list">
+    <% stories.forEach(story=> { %>
+        <a href="/story/<%= story.user_id %>/<%= story.id %>" class="story-card">
+            <h3>
+                <%= story.title %>
+            </h3>
+            <p>
+                <%= story.synopsis %>
+            </p>
+            <small>
+                by <strong>
+                    <%= story.author %>
+                </strong>
+                • <%= story.chapterCount %> chapter<%= story.chapterCount===1?'':'s' %>
+                        • <%= story.totalWords %> words
+            </small>
+        </a>
+        <% }) %>
+</div>
