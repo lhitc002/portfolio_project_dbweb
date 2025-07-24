@@ -1,4 +1,5 @@
 const db = require('../utils/queryBuilder');
+const { body, validationResult } = require('express-validator');
 const logger = require('../logger');
 
 const loggingPrefix = "[STORY]";
@@ -137,6 +138,81 @@ exports.chapterDetail = async (req, res) => {
     } catch (err) {
         logger.error(`${loggingPrefix} Database error`, { error: err.message, stack: err.stack });
         res.status(500).render('error', { message: 'Database error' });
+    }
+};
+
+// ---- Validators ----
+exports.validateCreateStory = [
+    body('title')
+        .trim()
+        .isLength({ min: 3 }).withMessage('Title must be at least 3 characters long.')
+        .isLength({ max: 150 }).withMessage('Title must be less than 150 characters.')
+        .custom(async (value, { req }) => {
+            const userId = req.session.userId;
+            if (!userId) return true;
+            const existing = await db
+                .table('stories')
+                .select('id')
+                .whereField('user_id', userId)
+                .whereField('title', value)
+                .first();
+            if (existing) {
+                throw new Error('You already have a story with that title.');
+            }
+            return true;
+        }),
+    body('synopsis')
+        .trim()
+        .isLength({ min: 10 }).withMessage('Synopsis must be at least 10 characters long.')
+];
+
+// ---- Create Story ----
+exports.createForm = (req, res) => {
+    if (!req.session.userId) return res.redirect('/auth/login');
+    logger.info(`${loggingPrefix} Create form accessed`, { userId: req.session.userId });
+    res.render('story/create', { title: 'Create New Story', errors: null, formData: {} });
+};
+
+exports.createStory = async (req, res) => {
+    if (!req.session.userId) return res.redirect('/auth/login');
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const msgs = errors.array().map(e => e.msg);
+        return res.render('story/create', {
+            title: 'Create New Story',
+            errors: msgs,
+            formData: req.body
+        });
+    }
+
+    try {
+        const userId = req.session.userId;
+        const { title, synopsis } = req.body;
+        const storyData = {
+            user_id: userId,
+            title: title.trim(),
+            synopsis: synopsis.trim()
+        };
+        const result = await db.table('stories').insertAsync(storyData);
+        const storyId = result.insertId || result[0];
+        const createdStory = await db.table('stories').whereField('id', storyId).first();
+
+        logger.info(`${loggingPrefix} Story created successfully`, {
+            userId,
+            storyId,
+            title: title.substring(0, 50),
+            vanity: createdStory.vanity
+        });
+
+        const user = await db.table('users').whereField('id', userId).first();
+        res.redirect(`/story/${user.username}/${createdStory.vanity}`);
+    } catch (err) {
+        logger.error(`${loggingPrefix} Story creation error`, { error: err.message, stack: err.stack });
+        res.render('story/create', {
+            title: 'Create New Story',
+            errors: ['An error occurred while creating your story. Please try again.'],
+            formData: req.body
+        });
     }
 };
 
@@ -308,8 +384,11 @@ exports.deleteComment = async (req, res) => {
     }
 };
 
+
 exports.routes = {
     'GET /': 'index',
+    'GET /create': 'createForm',
+    'POST /create': ['validateCreateStory', 'createStory'],
     'GET /:username/:vanity': 'storyDetail',
     'GET /:username/:vanity/chapter/:chapternum': 'chapterDetail',
     'POST /:username/:vanity/chapter/:chapternum/comments': 'addComment',
