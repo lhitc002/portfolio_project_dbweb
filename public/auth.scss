@@ -42,3 +42,149 @@
         }
     }
 }
+
+.auth-container {
+    max-width: 400px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    h2 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: $primary-color;
+    }
+
+    .alert-error {
+        background: #ffe5e5;
+        border: 1px solid #ff9a9a;
+        color: #b30000;
+        padding: 0.75rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.95rem;
+
+            &:focus {
+                border-color: $link-color;
+                outline: none;
+            }
+        }
+    }
+
+    .btn-primary {
+        width: 100%;
+        background: $link-color;
+        color: white;
+        border: none;
+        padding: 0.6rem;
+        font-size: 1rem;
+        border-radius: 4px;
+        transition: background 0.2s;
+
+        &:hover {
+            background: darken($link-color, 10%);
+        }
+    }
+
+    .text-center {
+        text-align: center;
+        margin-top: 1rem;
+
+        a {
+            color: $link-color;
+            text-decoration: underline;
+
+            &:hover {
+                color: darken($link-color, 10%);
+            }
+        }
+    }
+}
+
+.login-form {
+    max-width: 400px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    h2 {
+        text-align: center;
+        color: $primary-color;
+        margin-bottom: 1.5rem;
+    }
+
+    form {
+        .form-group {
+            margin-bottom: 1rem;
+
+            label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 500;
+                color: #333;
+            }
+
+            input {
+                width: 100%;
+                padding: 0.5rem 0.75rem;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 0.95rem;
+
+                &:focus {
+                    border-color: $link-color;
+                    outline: none;
+                }
+            }
+        }
+
+        button {
+            width: 100%;
+            background: $link-color;
+            color: white;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+
+            &:hover {
+                background: darken($link-color, 10%);
+            }
+        }
+    }
+
+    .error {
+        background: #ffe5e5;
+        color: #b30000;
+        padding: 0.5rem;
+        border: 1px solid #ff9a9a;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+        display: none;
+    }
+}

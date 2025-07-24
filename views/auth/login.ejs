@@ -1,46 +1,47 @@
 <section class="login-form">
-    <h2>Login</h2>
-    <p class="error" id="login-error" style="display: none;"></p>
+  <h2>Login</h2>
+  <p class="error" id="login-error" style="display: none;"></p>
 
-    <form id="login-form">
-        <div>
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" required />
-        </div>
-        <div>
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required />
-        </div>
-        <button type="submit">Log In</button>
-    </form>
+  <form id="login-form">
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required />
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required />
+    </div>
+    <button type="submit">Log In</button>
+  </form>
+
 </section>
 
 <script>
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const errorEl = document.getElementById('login-error');
-        errorEl.style.display = 'none';
-        errorEl.textContent = '';
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorEl = document.getElementById('login-error');
+    errorEl.style.display = 'none';
+    errorEl.textContent = '';
 
-        const formData = new FormData(e.target);
-        const payload = Object.fromEntries(formData.entries());
+    const formData = new FormData(e.target);
+    const payload = Object.fromEntries(formData.entries());
 
-        const res = await fetch('/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            errorEl.textContent = data.error || 'Login failed';
-            errorEl.style.display = 'block';
-        } else {
-            window.location.href = data.redirect || '/';
-        }
+    const res = await fetch('/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
     });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      errorEl.textContent = data.error || 'Login failed';
+      errorEl.style.display = 'block';
+    } else {
+      window.location.href = data.redirect || '/';
+    }
+  });
 </script>
