@@ -216,6 +216,84 @@ exports.createStory = async (req, res) => {
     }
 };
 
+// validators (near validateCreateStory)
+exports.validateUpdateStory = [
+    body('title')
+        .trim()
+        .isLength({ min: 3 }).withMessage('Title must be at least 3 characters long.')
+        .isLength({ max: 150 }).withMessage('Title must be less than 150 characters.'),
+    body('synopsis')
+        .trim()
+        .isLength({ min: 10 }).withMessage('Synopsis must be at least 10 characters long.')
+];
+
+// GET form
+exports.editStoryForm = async (req, res) => {
+    const { username, vanity } = req.params;
+    const userId = req.session.userId;
+    const story = await db.table('story_summary')
+        .whereField('username', username)
+        .whereField('vanity', vanity)
+        .first();
+
+    if (!story || story.user_id !== userId) return res.status(403).render('error', { message: 'Forbidden' });
+    res.render('story/edit', { title: 'Edit Story', formData: story, errors: null });
+};
+
+// POST update
+exports.updateStory = async (req, res) => {
+    const { username, vanity } = req.params;
+    const userId = req.session.userId;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        const formData = {
+            ...req.body,
+            username,
+            vanity
+        };
+        return res.render('story/edit', {
+            title: 'Edit Story',
+            errors: errors.array().map(e => e.msg),
+            formData
+        });
+    }
+
+    const story = await db.table('stories')
+        .whereField('vanity', vanity)
+        .whereField('user_id', userId)
+        .first();
+    if (!story) return res.status(404).render('error', { message: 'Not found' });
+
+    // Update title & synopsis (trigger will auto-update vanity if title changed)
+    await db.table('stories')
+        .whereField('id', story.id)
+        .update({
+            title: req.body.title.trim(),
+            synopsis: req.body.synopsis.trim()
+        });
+
+    // Re-fetch updated story to get the possibly changed vanity
+    const updatedStory = await db.table('stories')
+        .whereField('id', story.id)
+        .first();
+
+    res.redirect(`/story/${username}/${updatedStory.vanity}`);
+};
+
+// POST delete
+exports.deleteStory = async (req, res) => {
+    const { username, vanity } = req.params;
+    const userId = req.session.userId;
+    const story = await db.table('stories')
+        .whereField('vanity', vanity)
+        .whereField('user_id', userId)
+        .first();
+    if (!story) return res.status(404).render('error', { message: 'Not found' });
+    await db.table('stories').whereField('id', story.id).delete();
+    res.redirect('/users/');
+};
+
 exports.addComment = async (req, res) => {
     const userId = req.session.userId;
     if (!userId) {
@@ -394,4 +472,7 @@ exports.routes = {
     'POST /:username/:vanity/chapter/:chapternum/comments': 'addComment',
     'POST /:username/:vanity/chapter/:chapternum/comments/:commentId/edit': 'editComment',
     'POST /:username/:vanity/chapter/:chapternum/comments/:commentId/delete': 'deleteComment',
+    'GET /:username/:vanity/edit': 'editStoryForm',
+    'POST /:username/:vanity/edit': ['validateUpdateStory', 'updateStory'],
+    'POST /:username/:vanity/delete': 'deleteStory',
 };
