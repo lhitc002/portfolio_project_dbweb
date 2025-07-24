@@ -125,13 +125,7 @@ CREATE TABLE IF NOT EXISTS comments (
 -- 6.1 Story Summary (ratings, comments, chapters all joined in one table)
 CREATE OR REPLACE VIEW story_summary AS
 SELECT
-  s.id,
-  s.user_id,
-  u.username,
-  s.title,
-  s.synopsis,
-  s.created_at,
-  s.updated_at,
+  s.*,
   COUNT(DISTINCT c.id)     AS chapter_count,
   AVG(r.rating)            AS avg_rating,
   COUNT(DISTINCT r.user_id) AS rating_count
