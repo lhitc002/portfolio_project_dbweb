@@ -58,6 +58,17 @@
         }
     }
 
+    .story-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-start;
+        margin-top: 1rem;
+
+        a {
+            max-height: 100px;
+        }
+    }
+
     .chapters {
         h3 {
             color: $primary-color;
