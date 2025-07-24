@@ -126,6 +126,7 @@ CREATE TABLE IF NOT EXISTS comments (
 CREATE OR REPLACE VIEW story_summary AS
 SELECT
   s.*,
+  u.username,
   COUNT(DISTINCT c.id)     AS chapter_count,
   AVG(r.rating)            AS avg_rating,
   COUNT(DISTINCT r.user_id) AS rating_count
@@ -133,7 +134,7 @@ FROM stories AS s
   JOIN users    AS u ON s.user_id = u.id
   LEFT JOIN chapters AS c ON c.story_id = s.id
   LEFT JOIN ratings  AS r ON r.story_id  = s.id
-GROUP BY s.id;
+GROUP BY s.id, u.username;
 
 -- 6.2 Chapter Comments (user details with comments)
 CREATE VIEW comments_with_users AS
