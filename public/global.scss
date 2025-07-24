@@ -110,6 +110,20 @@ footer {
     padding: 1rem;
     border-bottom: 1px solid #ccc;
 
+    .left-content {
+        display: flex;
+        flex: fit-content;
+
+        .headers {
+            display: flex;
+            align-items: center;
+
+            .sub-header {
+                margin-left: 10px;
+            }
+        }
+    }
+
     .topbar-content {
         display: flex;
     }
@@ -119,7 +133,17 @@ footer {
     font-size: 1.2rem;
     text-decoration: none;
     margin-right: 1.2rem;
+    color: white;
+    align-items: center;
+    display: flex;
+
+    &:hover {
+        color: #ccc; // or any other desired color
+        cursor: pointer;
+        text-decoration: underline; // optional
+    }
 }
+
 
 // Story list/cards
 .story-list {

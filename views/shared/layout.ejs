@@ -2,64 +2,92 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>
-        <%= appData?.appName %>
-    </title>
-    <link rel="stylesheet" href="/main.css">
+  <meta charset="UTF-8">
+  <title>
+    <%= appData?.appName %>
+  </title>
+  <link rel="stylesheet" href="/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 
 <body>
-    <div class="sidebar">
-        <h1 class="logo">
-            <%= appData?.appName %>
-        </h1>
-        <nav>
-            <a href="/">Home</a>
-            <a href="/collections">Collections</a>
-            <a href="/story">Stories</a>
-        </nav>
-    </div>
+  <div class="sidebar">
+    <h1 class="logo">
+      <%= appData?.appName %>
+    </h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/collections">Collections</a>
+      <a href="/story">Stories</a>
+    </nav>
+  </div>
 
-    <div class="content">
-        <header class="topbar">
-            <div class="topbar-content">
-                <div></div>
-                <a href="/search" class="search-icon" title="Search">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                </a>
-                <div class="auth-buttons">
-                    <% if (session.userId) { %>
-                        <span class="username">Hello,
-                            <a href="/users/">
-                                <%= session.username %>
-                            </a>
-                        </span>
-                        <form action="/auth/logout" method="post" style="display:inline">
-                            <button type="submit" class="btn">Logout</button>
-                        </form>
-                        <% } else { %>
-                            <a href="/auth/login" class="btn">Login</a>
-                            <a href="/auth/register" class="btn">Register</a>
-                            <% } %>
-                </div>
-            </div>
-        </header>
+  <div class="content">
+    <header class="topbar">
+      <div class="left-content">
+        <div class="headers">
+          <div class="heading">
+            <h1 class="page-header"></h1>
+          </div>
+          <div class="sub-heading">
+            <h4 class="sub-header"></h4>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-content">
+        <a href="/search" class="search-icon" title="Search">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </a>
+        <div class="auth-buttons">
+          <% if (session.userId) { %>
+          <span class="username">Hello,
+            <a href="/users/">
+              <%= session.username %>
+            </a>
+          </span>
+          <form id="logout-form" action="/auth/logout" method="post" style="display:inline">
+            <a href="javascript:void(0)" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="btn">Logout</a>
+          </form>
+          <% } else { %>
+          <a href="/auth/login" class="btn">Login</a>
+          <a href="/auth/register" class="btn">Register</a>
+          <% } %>
+        </div>
+      </div>
+    </header>
 
-        <main>
-            <%- body %> <!-- View content injected here -->
-        </main>
+    <!-- Sitewide scripts -->
+    <script>
+      function setHeading(heading, subHeading) {
+        // Set the main page header
+        $('.topbar .page-header').text(heading);
 
-        <footer>
-            <p>&copy; <%= new Date().getFullYear() %>
-                    <%= appData?.appName %>
-            </p>
-        </footer>
-    </div>
+        // If a sub‑heading was provided, show and set it; otherwise hide it
+        const $sub = $('.topbar .sub-header');
+        if (subHeading !== undefined && subHeading !== null && subHeading !== '') {
+          $sub.text(`(${subHeading})`).show();
+        } else {
+          $sub.text('').hide();
+        }
+      }
+    </script>
+
+    <main>
+      <%- body %>
+      <!-- View content injected here -->
+    </main>
+
+    <footer>
+      <p>&copy; <%= new Date().getFullYear() %>
+        <%= appData?.appName %>
+      </p>
+    </footer>
+  </div>
 </body>
 
 </html>

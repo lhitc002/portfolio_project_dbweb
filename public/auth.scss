@@ -1,0 +1,44 @@
+.auth-buttons {
+    display: flex;
+    align-items: center;
+
+    .username {
+        margin-right: 0.75rem;
+        font-size: 0.9rem;
+        color: white;
+
+        a {
+            color: inherit;
+            text-decoration: underline;
+
+            &:hover {
+                color: $link-color;
+            }
+        }
+    }
+
+    .btn {
+        background: transparent;
+        border: 1px solid white;
+        color: white;
+        border-radius: 4px;
+        padding: 0.4rem 0.8rem;
+        margin-left: 0.5rem;
+        font-size: 0.9rem;
+        transition: background 0.2s, color 0.2s;
+
+        &:hover {
+            background: white;
+            color: $primary-color;
+        }
+
+        &.primary {
+            background: $link-color;
+            border-color: $link-color;
+
+            &:hover {
+                background: darken($link-color, 10%);
+            }
+        }
+    }
+}
