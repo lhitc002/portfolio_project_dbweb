@@ -184,7 +184,7 @@ exports.addComment = async (req, res) => {
         }
 
         // 3) insert the comment
-        await db.table('comments').insert({
+        await db.table('comments').insertAsync({
             user_id: userId,
             chapter_id: chapter.id,
             parent_id: parent_id || null,
