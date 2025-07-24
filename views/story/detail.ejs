@@ -27,10 +27,10 @@
 
   <% if (session.userId === story.user_id) { %>
   <div class="story-actions button-group">
-    <a href="/story/<%= story.username %>/<%= story.vanity %>/edit" class="btn btn-secondary">Edit</a>
+    <a href="/story/<%= story.username %>/<%= story.vanity %>/edit" class="btn btn-secondary">Edit Story</a>
 
     <a href="#" class="btn btn-secondary" onclick="event.preventDefault(); if (confirm('Delete this story?')) { document.getElementById('delete-form').submit(); }">
-      Delete
+      Delete Story
     </a>
 
     <form id="delete-form" action="/story/<%= story.username %>/<%= story.vanity %>/delete" method="POST" style="display: none;"></form>
@@ -40,9 +40,14 @@
 
   <div class="chapters">
     <h3>Chapters</h3>
-    <% if (chapters && chapters.length> 0) { %>
+
+    <% if (session.userId === story.user_id) { %>
+    <a href="/story/<%= story.username %>/<%= story.vanity %>/chapter/add" class="btn btn-primary mb-2">Add Chapter</a>
+    <% } %>
+
+    <% if (chapters && chapters.length > 0) { %>
     <ol class="chapter-list">
-      <% chapters.forEach(chapter=> { %>
+      <% chapters.forEach(chapter => { %>
       <li>
         <a href="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>">
           <% if (chapter.title) { %>
@@ -54,6 +59,18 @@
         <span class="chapter-date">
           <%= new Date(chapter.created_at).toLocaleDateString() %>
         </span>
+
+        <% if (session.userId === story.user_id) { %>
+        <span class="chapter-actions" style="margin-left: 10px;">
+          <a href="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/edit" class="btn btn-sm btn-secondary">Edit</a>
+
+          <a href="#" class="btn btn-sm btn-secondary" onclick="event.preventDefault(); if (confirm('Delete this chapter?')) { document.getElementById('delete-chapter-<%= chapter.chapter_num %>').submit(); }">
+            Delete
+          </a>
+
+          <form id="delete-chapter-<%= chapter.chapter_num %>" action="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/delete" method="POST" style="display: none;"></form>
+        </span>
+        <% } %>
       </li>
       <% }) %>
     </ol>
