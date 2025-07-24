@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS collections (
   description TEXT,
   user_id     INT NOT NULL,
   created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -135,6 +136,21 @@ FROM stories AS s
   LEFT JOIN chapters AS c ON c.story_id = s.id
   LEFT JOIN ratings  AS r ON r.story_id  = s.id
 GROUP BY s.id, u.username;
+
+-- 6.1 Collection Summary (stories, ratings, users all joined in one table)
+CREATE OR REPLACE VIEW collection_summary AS
+SELECT
+  col.*,
+  u.username,
+  COUNT(DISTINCT sc.story_id)     AS story_count,
+  AVG(r.rating)                   AS avg_rating,
+  COUNT(DISTINCT r.user_id)       AS rating_count
+FROM collections AS col
+  JOIN users AS u ON col.user_id = u.id
+  LEFT JOIN story_collections AS sc ON sc.collection_id = col.id
+  LEFT JOIN ratings AS r ON r.story_id = sc.story_id
+GROUP BY col.id, u.username;
+
 
 -- 6.2 Chapter Comments (user details with comments)
 CREATE VIEW comments_with_users AS
