@@ -462,12 +462,165 @@ exports.deleteComment = async (req, res) => {
     }
 };
 
+// ---- Chapter Validators ----
+exports.validateCreateChapter = [
+    body('title')
+        .trim()
+        .isLength({ min: 1 }).withMessage('Chapter title is required.')
+        .isLength({ max: 100 }).withMessage('Title must be under 100 characters.'),
+    body('content')
+        .trim()
+        .isLength({ min: 10 }).withMessage('Content must be at least 10 characters.')
+];
+
+exports.validateUpdateChapter = exports.validateCreateChapter;
+
+// GET: show form to add chapter
+exports.createChapterForm = async (req, res) => {
+    const { username, vanity } = req.params;
+    const story = await db.table('story_summary')
+        .whereField('username', username)
+        .whereField('vanity', vanity)
+        .first();
+    if (!story || story.user_id !== req.session.userId) {
+        return res.status(403).render('error', { message: 'Forbidden' });
+    }
+    res.render('chapter/create', { title: 'Add Chapter', errors: null, formData: { username, vanity, chapter_num: '', title: '', content: '' } });
+};
+
+// POST: create chapter
+exports.createChapter = async (req, res) => {
+    const { username, vanity } = req.params;
+    const chapNum = parseInt(req.body.chapter_num, 10);
+    const errors = validationResult(req);
+    if (!errors.isEmpty() || isNaN(chapNum)) {
+        const msgs = errors.array().map(e => e.msg);
+        if (isNaN(chapNum)) msgs.push('Invalid chapter number');
+        return res.render('chapter/create', {
+            title: 'Add Chapter',
+            errors: msgs,
+            formData: { username, vanity, chapter_num: req.body.chapter_num, title: req.body.title, content: req.body.content }
+        });
+    }
+    try {
+        const story = await db.table('story_summary')
+            .whereField('username', username)
+            .whereField('vanity', vanity)
+            .first();
+        if (!story || story.user_id !== req.session.userId) {
+            return res.status(403).render('error', { message: 'Forbidden' });
+        }
+
+        // Check for duplicate chapter number
+        const existingChapter = await db.table('chapters')
+            .whereField('story_id', story.id)
+            .whereField('chapter_num', chapNum)
+            .first();
+
+        if (existingChapter) {
+            return res.render('chapter/create', {
+                title: 'Add Chapter',
+                errors: ['Chapter number already exists for this story.'],
+                formData: { username, vanity, chapter_num: req.body.chapter_num, title: req.body.title, content: req.body.content }
+            });
+        }
+
+        await db.table('chapters').insertAsync({
+            story_id: story.id,
+            chapter_num: chapNum,
+            title: req.body.title.trim(),
+            content: req.body.content.trim()
+        });
+        res.redirect(`/story/${username}/${vanity}`);
+    } catch (err) {
+        logger.error(`${loggingPrefix} Chapter create error`, { error: err.message, stack: err.stack });
+        res.render('chapter/create', { title: 'Add Chapter', errors: ['Error creating chapter'], formData: req.body });
+    }
+};
+
+// GET: edit chapter form
+exports.editChapterForm = async (req, res) => {
+    const { username, vanity, chapternum } = req.params;
+    const story = await db.table('story_summary')
+        .whereField('username', username)
+        .whereField('vanity', vanity)
+        .first();
+    const chapNum = parseInt(chapternum, 10);
+    if (!story || story.user_id !== req.session.userId) {
+        return res.status(403).render('error', { message: 'Forbidden' });
+    }
+    const chapter = await db.table('chapters')
+        .whereField('story_id', story.id)
+        .whereField('chapter_num', chapNum)
+        .first();
+    if (!chapter) return res.status(404).render('error', { message: 'Chapter not found' });
+    res.render('chapter/edit', { title: 'Edit Chapter', errors: null, formData: { username, vanity, chapter_num: chapNum, title: chapter.title, content: chapter.content } });
+};
+
+// POST: update chapter
+exports.updateChapter = async (req, res) => {
+    const { username, vanity, chapternum } = req.params;
+    const chapNum = parseInt(chapternum, 10);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.render('chapter/edit', {
+            title: 'Edit Chapter',
+            errors: errors.array().map(e => e.msg),
+            formData: { username, vanity, chapter_num: chapternum, title: req.body.title, content: req.body.content }
+        });
+    }
+    try {
+        const story = await db.table('story_summary')
+            .whereField('username', username)
+            .whereField('vanity', vanity)
+            .first();
+        if (!story || story.user_id !== req.session.userId) {
+            return res.status(403).render('error', { message: 'Forbidden' });
+        }
+        await db.table('chapters')
+            .whereField('story_id', story.id)
+            .whereField('chapter_num', chapNum)
+            .update({ title: req.body.title.trim(), content: req.body.content.trim() });
+        res.redirect(`/story/${username}/${vanity}/chapter/${chapNum}`);
+    } catch (err) {
+        logger.error(`${loggingPrefix} Chapter update error`, { error: err.message, stack: err.stack });
+        res.render('chapter/edit', { title: 'Edit Chapter', errors: ['Error updating chapter'], formData: req.body });
+    }
+};
+
+// POST: delete chapter
+exports.deleteChapter = async (req, res) => {
+    const { username, vanity, chapternum } = req.params;
+    const chapNum = parseInt(chapternum, 10);
+    try {
+        const story = await db.table('story_summary')
+            .whereField('username', username)
+            .whereField('vanity', vanity)
+            .first();
+        if (!story || story.user_id !== req.session.userId) {
+            return res.status(403).render('error', { message: 'Forbidden' });
+        }
+        await db.table('chapters')
+            .whereField('story_id', story.id)
+            .whereField('chapter_num', chapNum)
+            .delete();
+        res.redirect(`/story/${username}/${vanity}`);
+    } catch (err) {
+        logger.error(`${loggingPrefix} Chapter delete error`, { error: err.message, stack: err.stack });
+        res.status(500).render('error', { message: 'Error deleting chapter' });
+    }
+};
 
 exports.routes = {
     'GET /': 'index',
     'GET /create': 'createForm',
     'POST /create': ['validateCreateStory', 'createStory'],
     'GET /:username/:vanity': 'storyDetail',
+    'GET /:username/:vanity/chapter/add': 'createChapterForm',
+    'POST /:username/:vanity/chapter/add': ['validateCreateChapter', 'createChapter'],
+    'GET /:username/:vanity/chapter/:chapternum/edit': 'editChapterForm',
+    'POST /:username/:vanity/chapter/:chapternum/edit': ['validateUpdateChapter', 'updateChapter'],
+    'POST /:username/:vanity/chapter/:chapternum/delete': 'deleteChapter',
     'GET /:username/:vanity/chapter/:chapternum': 'chapterDetail',
     'POST /:username/:vanity/chapter/:chapternum/comments': 'addComment',
     'POST /:username/:vanity/chapter/:chapternum/comments/:commentId/edit': 'editComment',

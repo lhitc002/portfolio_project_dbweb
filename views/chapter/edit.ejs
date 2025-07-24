@@ -1,0 +1,66 @@
+<div class="chapter-form-container">
+  <div class="form-header">
+    <h1>Edit Chapter</h1>
+    <p>Update your chapter details</p>
+  </div>
+
+  <% if (errors && errors.length) { %>
+  <div class="error-messages">
+    <ul>
+      <% errors.forEach(e => { %><li><%= e %></li><% }) %>
+    </ul>
+  </div>
+  <% } %>
+
+  <form action="/story/<%= formData.username %>/<%= formData.vanity %>/chapter/<%= formData.chapter_num %>/edit" method="POST">
+    <div class="form-group">
+      <label>Chapter <%= formData.chapter_num %></label>
+    </div>
+
+    <div class="form-group">
+      <label for="editChapterTitle">Title<span class="required">*</span></label>
+      <input type="text" id="editChapterTitle" name="title" required maxlength="100" value="<%= formData.title %>" class="form-control">
+      <div class="character-count">
+        <span id="editTitleCount">0</span>/100 characters
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="editContent">Content <span class="required">*</span></label>
+      <textarea id="editContent" name="content" rows="10" required class="form-control"><%= formData.content %></textarea>
+      <div class="form-help">Use Markdown for formatting your chapter content</div>
+    </div>
+
+    <div class="button-group">
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+      <a href="/story/<%= formData.username %>/<%= formData.vanity %>" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Initialize character counters
+  function initCharacterCounters() {
+    updateCharacterCount('chapterTitle', 'titleCount', 100);
+    updateCharacterCount('editChapterTitle', 'editTitleCount', 100);
+
+    function updateCharacterCount(inputId, countId, maxLength) {
+      const input = document.getElementById(inputId);
+      const counter = document.getElementById(countId);
+
+      if (!input || !counter) return;
+
+      function updateCount() {
+        const length = input.value.length;
+        counter.textContent = length;
+        counter.style.color = length > maxLength * 0.9 ? '#e74c3c' :
+          length > maxLength * 0.7 ? '#f39c12' : '#666';
+      }
+
+      input.addEventListener('input', updateCount);
+      updateCount();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initCharacterCounters);
+</script>
