@@ -95,9 +95,9 @@ function formatRawDate(date) {
     <% comments.forEach(comment => { %>
     <div class="comment">
       <div class="comment-header">
-        <strong>
-          <%= comment.username %>
-        </strong>
+        <a href="/users/<%= comment.username %>"><strong>
+            <%= comment.username %>
+          </strong></a>
         <span class="comment-date" title="<%= formatRawDate(comment.created_at) %>">
           <%= timeAgo(comment.created_at) %>
         </span>

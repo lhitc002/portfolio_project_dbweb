@@ -3,7 +3,7 @@
     <%= story.title %>
   </h1>
   <p class="author">by <strong>
-      <%= story.username %>
+      <a href="/users/<%= story.username %>"><%= story.username %></a>
     </strong></p>
 
   <% if (story.synopsis) { %>

@@ -6,7 +6,7 @@
     <h3><a href="/story/<%= story.username %>/<%= story.vanity %>">
         <%= story.title %>
       </a></h3>
-    <p class="author">by <%= story.username %>
+    <p class="author">by <a href="/users/<%= story.username %>"><%= story.username %></a>
     </p>
     <p class="synopsis">
       <%= story.synopsis || 'No synopsis available' %>

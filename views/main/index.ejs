@@ -1,21 +1,18 @@
 <h2>Recently Uploaded Stories</h2>
 
 <div class="story-list">
-  <% stories.forEach(story=> { %>
-  <a href="/story/<%= story.author_username %>/<%= story.story_vanity %>" class="story-card">
-    <h3>
-      <%= story.title %>
-    </h3>
-    <p>
-      <%= story.synopsis %>
-    </p>
+  <% stories.forEach(story => { %>
+  <div class="story-card">
+    <a href="/story/<%= story.author_username %>/<%= story.story_vanity %>">
+      <h3><%= story.title %></h3>
+      <p><%= story.synopsis %></p>
+    </a>
     <small>
-      by <strong>
-        <%= story.author %>
-      </strong>
+      by <strong><a class="author-link" href="/users/<%= story.author_username %>"><%= story.author %></a></strong>
       • <%= story.chapterCount %> chapter<%= story.chapterCount===1?'':'s' %>
       • <%= story.totalWords %> words
     </small>
-  </a>
+  </div>
   <% }) %>
+
 </div>
