@@ -90,9 +90,9 @@ exports.loginPost = async (req, res) => {
         logger.info(`${logPrefix} User logged in successfully: ${user.username} (ID: ${user.id})`);
 
         if (req.accepts('json')) {
-            return res.json({ success: true, redirect: `/users/${user.id}` });
+            return res.json({ success: true, redirect: `/users/${user.username}` });
         }
-        res.redirect(`/users/${user.id}`);
+        res.redirect(`/users/${user.username}`);
     } catch (err) {
         logger.error(`${logPrefix} ERROR during login: ${err.message}`, { stack: err.stack });
         const msg = 'Server error. Please try again later.';
@@ -179,7 +179,7 @@ exports.registerPost = async (req, res) => {
         req.session.username = username;
         logger.info(`${logPrefix} Session set: userId=${userId}, username=${username}`);
 
-        res.redirect(`/users/${userId}`);
+        res.redirect(`/users/${username}`);
     } catch (err) {
         logger.error(`${logPrefix} CRITICAL ERROR during registration: ${err.message}`, { stack: err.stack });
 
