@@ -41,9 +41,16 @@ exports.results = async (req, res) => {
         if (types.includes('stories')) {
             console.log('[SEARCH] Querying stories...');
             tasks.push(
-                db.table('stories')
-                    .select(['id', 'title', 'user_id'])
-                    .whereRaw('(title LIKE ? OR synopsis LIKE ?)', [likeQ, likeQ])
+                db.table('stories as s')
+                    .select([
+                        's.id',
+                        's.title',
+                        's.user_id',
+                        's.vanity as story_vanity',
+                        'u.username as author_username'
+                    ])
+                    .join('users as u', 's.user_id = u.id')
+                    .whereRaw('(s.title LIKE ? OR s.synopsis LIKE ?)', [likeQ, likeQ])
                     .get()
                     .then(rows => ({ stories: rows }))
             );
@@ -53,9 +60,15 @@ exports.results = async (req, res) => {
         if (types.includes('collections')) {
             console.log('[SEARCH] Querying collections...');
             tasks.push(
-                db.table('collections')
-                    .select(['id', 'title', 'user_id'])
-                    .whereRaw('title LIKE ?', [likeQ])
+                db.table('collections as col')
+                    .select([
+                        'col.id',
+                        'col.title',
+                        'col.user_id',
+                        'u.username as owner_username'
+                    ])
+                    .join('users as u', 'col.user_id = u.id')
+                    .whereRaw('col.title LIKE ?', [likeQ])
                     .get()
                     .then(rows => ({ collections: rows }))
             );
@@ -72,10 +85,13 @@ exports.results = async (req, res) => {
                         'c.content',
                         'ch.story_id',
                         's.user_id',
-                        'ch.chapter_num'
+                        'ch.chapter_num',
+                        's.vanity as story_vanity',
+                        'u.username as story_author_username'
                     ])
                     .join('chapters as ch', 'c.chapter_id = ch.id')
-                    .join('stories as s', 'ch.story_id   = s.id')
+                    .join('stories as s', 'ch.story_id = s.id')
+                    .join('users as u', 's.user_id = u.id')
                     .whereRaw('c.content LIKE ?', [likeQ])
                     .get()
                     .then(rows => ({ comments: rows }))
@@ -92,9 +108,12 @@ exports.results = async (req, res) => {
                         'ch.story_id',
                         'ch.title',
                         'ch.chapter_num',
-                        's.user_id'
+                        's.user_id',
+                        's.vanity as story_vanity',
+                        'u.username as story_author_username'
                     ])
                     .join('stories as s', 'ch.story_id = s.id')
+                    .join('users as u', 's.user_id = u.id')
                     .whereRaw('(ch.title LIKE ? OR ch.content LIKE ?)', [likeQ, likeQ])
                     .get()
                     .then(rows => ({ chapters: rows }))

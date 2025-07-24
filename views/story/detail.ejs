@@ -1,52 +1,51 @@
 <div class="story-detail">
-    <h1>
-        <%= story.title %>
-    </h1>
-    <p class="author">by <strong>
-            <%= story.username %>
-        </strong></p>
+  <h1>
+    <%= story.title %>
+  </h1>
+  <p class="author">by <strong>
+      <%= story.username %>
+    </strong></p>
 
-    <% if (story.synopsis) { %>
-        <div class="synopsis">
-            <h3>Synopsis</h3>
-            <p>
-                <%= story.synopsis %>
-            </p>
-        </div>
-        <% } %>
+  <% if (story.synopsis) { %>
+  <div class="synopsis">
+    <h3>Synopsis</h3>
+    <p>
+      <%= story.synopsis %>
+    </p>
+  </div>
+  <% } %>
 
-            <div class="story-stats">
-                <% if (story.avg_rating) { %>
-                    <span class="rating">Rating: ★ <%= Number(story.avg_rating).toFixed(1) %> (<%= story.rating_count %>
-                                reviews)</span>
-                    <% } %>
-                        <span class="created">Created: <%= new Date(story.created_at).toLocaleDateString() %></span>
-                        <span class="updated">Last Updated: <%= new Date(story.updated_at).toLocaleDateString() %>
-                        </span>
-            </div>
+  <div class="story-stats">
+    <% if (story.avg_rating) { %>
+    <span class="rating">Rating: ★ <%= Number(story.avg_rating).toFixed(1) %> (<%= story.rating_count %>
+      reviews)</span>
+    <% } %>
+    <span class="created">Created: <%= new Date(story.created_at).toLocaleDateString() %></span>
+    <span class="updated">Last Updated: <%= new Date(story.updated_at).toLocaleDateString() %>
+    </span>
+  </div>
 
-            <div class="chapters">
-                <h3>Chapters</h3>
-                <% if (chapters && chapters.length> 0) { %>
-                    <ol class="chapter-list">
-                        <% chapters.forEach(chapter=> { %>
-                            <li>
-                                <a
-                                    href="/story/<%= story.user_id %>/<%= story.id %>/chapter/<%= chapter.chapter_num %>">
-                                    <% if (chapter.title) { %>
-                                        Chapter <%= chapter.chapter_num %>: <%= chapter.title %>
-                                                <% } else { %>
-                                                    Chapter <%= chapter.chapter_num %>
-                                                        <% } %>
-                                </a>
-                                <span class="chapter-date">
-                                    <%= new Date(chapter.created_at).toLocaleDateString() %>
-                                </span>
-                            </li>
-                            <% }) %>
-                    </ol>
-                    <% } else { %>
-                        <p>No chapters available yet.</p>
-                        <% } %>
-            </div>
+  <div class="chapters">
+    <h3>Chapters</h3>
+    <% if (chapters && chapters.length> 0) { %>
+    <ol class="chapter-list">
+      <% chapters.forEach(chapter=> { %>
+      <li>
+        <a href="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>">
+          <% if (chapter.title) { %>
+          Chapter <%= chapter.chapter_num %>: <%= chapter.title %>
+          <% } else { %>
+          Chapter <%= chapter.chapter_num %>
+          <% } %>
+        </a>
+        <span class="chapter-date">
+          <%= new Date(chapter.created_at).toLocaleDateString() %>
+        </span>
+      </li>
+      <% }) %>
+    </ol>
+    <% } else { %>
+    <p>No chapters available yet.</p>
+    <% } %>
+  </div>
 </div>

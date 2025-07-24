@@ -19,33 +19,33 @@ exports.index = async (req, res) => {
 };
 
 exports.storyDetail = async (req, res) => {
-    const userId = parseInt(req.params.userid, 10);
-    const storyId = parseInt(req.params.storyid, 10);
+    const username = req.params.username;
+    const storyVanity = req.params.vanity;
 
-    logger.info(`${loggingPrefix} Detail route hit`, { userId, storyId });
+    logger.info(`${loggingPrefix} Detail route hit`, { username, storyVanity });
 
-    if (isNaN(userId) || isNaN(storyId)) {
-        return res.status(400).render('error', { message: 'Invalid user or story ID' });
+    if (!username || !storyVanity) {
+        return res.status(400).render('error', { message: 'Invalid username or story vanity' });
     }
 
     try {
-        // 1) fetch story + ratings
+        // 1) fetch story + ratings using username and story vanity
         const story = await db.table('story_summary')
-            .whereField('id', storyId)
-            .whereField('user_id', userId)
+            .whereField('username', username)
+            .whereField('vanity', storyVanity)
             .first();
 
         if (!story) {
-            logger.warn(`${loggingPrefix} Not found or unauthorized`, { userId, storyId });
+            logger.warn(`${loggingPrefix} Not found`, { username, storyVanity });
             return res.status(404).render('error', {
-                message: 'Story not found or does not belong to this user'
+                message: 'Story not found'
             });
         }
 
         // 2) fetch chapters
         const chapters = await db
             .table('chapters')
-            .whereField('story_id', storyId)
+            .whereField('story_id', story.id)
             .orderBy('chapter_num', 'ASC')
             .get();
 
@@ -61,38 +61,40 @@ exports.storyDetail = async (req, res) => {
 };
 
 exports.chapterDetail = async (req, res) => {
-    const userId = parseInt(req.params.userid, 10);
-    const storyId = parseInt(req.params.storyid, 10);
+    const username = req.params.username;
+    const storyVanity = req.params.vanity;
     const chapterNum = parseInt(req.params.chapternum, 10);
 
-    logger.info(`${loggingPrefix} Chapter route hit`, { userId, storyId, chapterNum });
+    logger.info(`${loggingPrefix} Chapter route hit`, { username, storyVanity, chapterNum });
 
-    if ([userId, storyId, chapterNum].some(isNaN)) {
+    if (!username || !storyVanity || isNaN(chapterNum)) {
         return res.status(400).render('error', { message: 'Invalid parameters' });
     }
 
     try {
-        // verify story ownership
+        // verify story exists and get story details using username and vanity
         const story = await db
             .table('story_summary')
-            .whereField('id', storyId)
-            .whereField('user_id', userId)
+            .join('users', 'story_summary.user_id', '=', 'users.id')
+            .select('story_summary.*', 'users.username')
+            .whereField('users.username', username)
+            .whereField('story_summary.vanity', storyVanity)
             .first();
 
         if (!story) {
-            logger.warn(`${loggingPrefix} Story not found`, { userId, storyId });
+            logger.warn(`${loggingPrefix} Story not found`, { username, storyVanity });
             return res.status(404).render('error', { message: 'Story not found' });
         }
 
         // fetch chapter
         const chapter = await db
             .table('chapters')
-            .whereField('story_id', storyId)
+            .whereField('story_id', story.id)
             .whereField('chapter_num', chapterNum)
             .first();
 
         if (!chapter) {
-            logger.warn(`${loggingPrefix} Chapter not found`, { storyId, chapterNum });
+            logger.warn(`${loggingPrefix} Chapter not found`, { storyId: story.id, chapterNum });
             return res.status(404).render('error', { message: 'Chapter not found' });
         }
 
@@ -108,7 +110,7 @@ exports.chapterDetail = async (req, res) => {
             .table('chapters')
             .select(['chapter_num', 'title'])
             .whereRaw('story_id = ? AND chapter_num IN (?, ?)', [
-                storyId, chapterNum - 1, chapterNum + 1
+                story.id, chapterNum - 1, chapterNum + 1
             ])
             .orderBy('chapter_num', 'ASC')
             .get();
@@ -139,6 +141,6 @@ exports.chapterDetail = async (req, res) => {
 
 exports.routes = {
     'GET /': 'index',
-    'GET /:userid/:storyid': 'storyDetail',
-    'GET /:userid/:storyid/chapter/:chapternum': 'chapterDetail'
+    'GET /:username/:vanity': 'storyDetail',
+    'GET /:username/:vanity/chapter/:chapternum': 'chapterDetail'
 };

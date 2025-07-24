@@ -3,7 +3,6 @@
     <input type="text" name="q" minlength="2" required placeholder="Search across all categories..." value="<%= typeof q !== 'undefined' ? q : '' %>" class="search-input" />
     <button type="submit" class="search-button">Search</button>
   </div>
-
   <div class="filter-row">
     <div class="categories-label">
       <label for="types" class="filter-label">Categories:</label>
@@ -18,45 +17,42 @@
   </div>
 </form>
 
-
-<% if (typeof results !=='undefined' ) { %>
-<% const activeCats=['users','stories','collections','comments','chapters'] .filter(cat=>
+<% if (typeof results !== 'undefined') { %>
+<% const activeCats = ['users','stories','collections','comments','chapters'].filter(cat =>
         Array.isArray(results[cat]) && results[cat].length);
         %>
-
 <% if (activeCats.length) { %>
 <div class="search-results">
   <div class="tabs">
-    <% activeCats.forEach((category, i)=> { %>
+    <% activeCats.forEach((category, i) => { %>
     <button class="tab-btn <%= i === 0 ? 'active' : '' %>" data-tab="<%= category %>">
       <%= category.charAt(0).toUpperCase() + category.slice(1) %>
     </button>
     <% }) %>
   </div>
-
-  <% activeCats.forEach((category, i)=> { %>
+  <% activeCats.forEach((category, i) => { %>
   <section class="results-section <%= i === 0 ? 'active' : '' %>" data-tab-content="<%= category %>">
     <ul>
-      <% results[category].forEach(item=> { %>
+      <% results[category].forEach(item => { %>
       <li>
-        <% if (category==='users' ) { %>
-        <a href="/users/<%= item.id %>">
+        <% if (category === 'users') { %>
+        <a href="/users/<%= item.username %>">
           <%= item.username %>
         </a>
-        <% } else if (category==='stories' ) { %>
-        <a href="/story/<%= item.user_id %>/<%= item.id %>">
+        <% } else if (category === 'stories') { %>
+        <a href="/story/<%= item.author_username %>/<%= item.story_vanity %>">
           <%= item.title %>
         </a>
-        <% } else if (category==='collections' ) { %>
-        <a href="/collections/<%= item.user_id %>/<%= item.id %>">
+        <% } else if (category === 'collections') { %>
+        <a href="/collections/<%= item.owner_username %>/<%= item.id %>">
           <%= item.title %>
         </a>
-        <% } else if (category==='comments' ) { %>
-        <a href="/story/<%= item.user_id %>/<%= item.story_id %>/chapter/<%= item.chapter_num %>#comment-<%= item.id %>">
+        <% } else if (category === 'comments') { %>
+        <a href="/story/<%= item.story_author_username %>/<%= item.story_vanity %>/chapter/<%= item.chapter_num %>#comment-<%= item.id %>">
           Comment #<%= item.id %>
         </a>
-        <% } else if (category==='chapters' ) { %>
-        <a href="/story/<%= item.user_id %>/<%= item.story_id %>/chapter/<%= item.chapter_num %>">
+        <% } else if (category === 'chapters') { %>
+        <a href="/story/<%= item.story_author_username %>/<%= item.story_vanity %>/chapter/<%= item.chapter_num %>">
           <%= item.title %>
         </a>
         <% } %>
@@ -73,13 +69,11 @@
 
 <script>
   setHeading("Universal Search", "Searches titles, usernames and chapter/comment content");
-
   $('#types').select2({
     placeholder: 'Select categories',
     allowClear: true,
     width: 'resolve'
   });
-
   document.querySelectorAll('.tab-btn').forEach(button => {
     button.addEventListener('click', () => {
       const tab = button.dataset.tab;

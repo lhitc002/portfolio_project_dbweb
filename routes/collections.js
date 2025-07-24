@@ -15,7 +15,6 @@ exports.index = async (req, res) => {
       .groupBy('collections.id, collections.title, collections.description, collections.user_id')
       .orderBy('collections.created_at', 'DESC')
       .get();
-
     logger.info(`Fetched ${collections.length} collections`);
     res.render('collections/index', { collections });
   } catch (error) {
@@ -26,19 +25,23 @@ exports.index = async (req, res) => {
 
 exports.list = async (req, res) => {
   const { userId, collectionId } = req.params;
-
   try {
     // Get collection (using my test linq imitation)
     const literalId = JSON.stringify(Number(collectionId));
     const collection = await db.get('collections', eval(`m => m.id == ${literalId}`));
-
     if (!collection || collection.user_id != userId) {
       return res.status(404).send('Collection not found');
     }
 
-    // Get stories in collection
+    // Get stories in collection with username and story vanity
     const stories = await db.table('stories')
+      .select([
+        'stories.*',
+        'users.username as author_username',
+        'stories.vanity as story_vanity'
+      ])
       .join('story_collections as sc', 'stories.id = sc.story_id')
+      .join('users', 'stories.user_id = users.id')
       .whereRaw('sc.collection_id = ?', [collectionId])
       .orderBy('stories.created_at', 'DESC')
       .get();
