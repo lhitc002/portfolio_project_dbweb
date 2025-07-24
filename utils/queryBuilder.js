@@ -104,6 +104,35 @@ class QueryBuilder {
         return query(sql, this.whereParams);
     }
 
+    // Simpler insert method
+    async insert(data) {
+        const insertData = data || this.insertData;
+        if (!insertData) {
+            throw new Error('No data provided to insert');
+        }
+
+        const keys = Object.keys(insertData);
+        const values = Object.values(insertData);
+        const columns = keys.join(', ');
+        const placeholders = keys.map(() => '?').join(', ');
+        const sql = `INSERT INTO ${this.table} (${columns}) VALUES (${placeholders})`;
+
+        logger.debug('QueryBuilder.insert()', { sql, values });
+        try {
+            const result = await query(sql, values);
+            return result;
+        } catch (err) {
+            logger.error('QueryBuilder.insert() failed', {
+                sql,
+                values,
+                error: err.message,
+                stack: err.stack
+            });
+            err.message = `Query failed: ${sql} | Params: ${JSON.stringify(values)} | Error: ${err.message}`;
+            throw err;
+        }
+    }
+
     async insertAndGet() {
         if (!this.insertData) {
             throw new Error('No data provided to insert');
@@ -133,6 +162,60 @@ class QueryBuilder {
     async first() {
         const rows = await this.limit(1).get();
         return rows[0] || null;
+    }
+
+    async update(data) {
+        const updateData = data || this.updateData;
+        if (!updateData) {
+            throw new Error('No data provided to update');
+        }
+        if (this.whereConditions.length === 0) {
+            throw new Error('Update requires WHERE conditions for safety');
+        }
+
+        const keys = Object.keys(updateData);
+        const values = Object.values(updateData);
+        const setClause = keys.map(key => `${key} = ?`).join(', ');
+        const sql = `UPDATE ${this.table} SET ${setClause} WHERE ${this.whereConditions.join(' AND ')}`;
+        const params = [...values, ...this.whereParams];
+
+        logger.debug('QueryBuilder.update()', { sql, params });
+        try {
+            const result = await query(sql, params);
+            return result;
+        } catch (err) {
+            logger.error('QueryBuilder.update() failed', {
+                sql,
+                params,
+                error: err.message,
+                stack: err.stack
+            });
+            err.message = `Query failed: ${sql} | Params: ${JSON.stringify(params)} | Error: ${err.message}`;
+            throw err;
+        }
+    }
+
+    async delete() {
+        if (this.whereConditions.length === 0) {
+            throw new Error('Delete requires WHERE conditions for safety');
+        }
+
+        const sql = `DELETE FROM ${this.table} WHERE ${this.whereConditions.join(' AND ')}`;
+
+        logger.debug('QueryBuilder.delete()', { sql, params: this.whereParams });
+        try {
+            const result = await query(sql, this.whereParams);
+            return result;
+        } catch (err) {
+            logger.error('QueryBuilder.delete() failed', {
+                sql,
+                params: this.whereParams,
+                error: err.message,
+                stack: err.stack
+            });
+            err.message = `Query failed: ${sql} | Params: ${JSON.stringify(this.whereParams)} | Error: ${err.message}`;
+            throw err;
+        }
     }
 
     async count() {

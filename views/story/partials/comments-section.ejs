@@ -1,0 +1,60 @@
+<div class="comments-section">
+  <h3>Comments</h3>
+
+  <%- include('../partials/new-comment-form', { story: story, chapter: chapter }) %>
+
+  <% if (comments && comments.length > 0) { %>
+  <%
+    function formatRawDate(date) { const d = new Date(date); return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`; }
+    function timeAgo(date) { const now = new Date(); const diff = Math.floor((now - new Date(date)) / 1000); if (diff < 60) return `${diff} second${diff !== 1 ? 's' : ''} ago`; const minutes = Math.floor(diff / 60); const seconds = diff % 60; if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''}, ${seconds} second${seconds !== 1 ? 's' : ''} ago`; const hours = Math.floor(minutes / 60); const mins = minutes % 60; if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''}, ${mins} minute${mins !== 1 ? 's' : ''} ago`; const days = Math.floor(hours / 24); if (days < 30) return `${days} day${days !== 1 ? 's' : ''} ago`; const months = Math.floor(days / 30); const remDays = days % 30; return `${months} month${months !== 1 ? 's' : ''}${remDays ? `, ${remDays} day${remDays !== 1 ? 's' : ''}` : ''} ago`; }
+    function buildCommentTree(comments) {
+    const commentMap = {};
+    const roots = [];
+    comments.forEach(comment => {
+        comment.replies = [];
+        commentMap[comment.id] = comment;
+    });
+    comments.forEach(comment => {
+        if (comment.parent_id && commentMap[comment.parent_id]) {
+        commentMap[comment.parent_id].replies.push(comment);
+        } else {
+        roots.push(comment);
+        }
+    });
+    return roots;
+    }
+    const commentTree = buildCommentTree(comments);
+%>
+
+  <!-- Include the comment partial for each root comment -->
+  <% commentTree.forEach(comment => { %>
+  <%- include('../partials/comment', { comment: comment, depth: 0, story: story, chapter: chapter, userId: userId, timeAgo: timeAgo, formatRawDate: formatRawDate }) %>
+  <% }) %>
+  <% } else { %>
+  <p>No comments yet.</p>
+  <% } %>
+</div>
+
+<script type="text/template" id="comment-form-template">
+  <div class="comment-form">
+    <form action="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/comments" method="POST">
+      <input type="hidden" name="parent_id" value="__PARENT_ID__" />
+      <textarea name="content" placeholder="Write your comment here..." rows="4" required></textarea>
+      <div class="form-actions">
+        <button type="submit" class="submit-comment">Submit</button>
+        <button type="button" class="cancel-comment">Cancel</button>
+      </div>
+    </form>
+  </div>
+</script>
+<script type="text/template" id="edit-form-template">
+  <div class="edit-form">
+    <form action="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/comments/__COMMENT_ID__/edit" method="POST">
+      <textarea name="content" rows="4" required>__ORIGINAL_CONTENT__</textarea>
+      <div class="form-actions">
+        <button type="submit" class="submit-comment">Save</button>
+        <button type="button" class="cancel-edit">Cancel</button>
+      </div>
+    </form>
+  </div>
+</script>

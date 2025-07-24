@@ -1,0 +1,31 @@
+<div class="comment" data-comment-id="<%= comment.id %>" style="margin-left: <%= (depth || 0) * 20 %>px;">
+  <div class="comment-header">
+    <a href="/users/<%= comment.username %>"><strong><%= comment.username %></strong></a>
+    <span class="comment-date" title="<%= formatRawDate(comment.created_at) %>">
+      <%= timeAgo(comment.created_at) %>
+    </span>
+  </div>
+  <div class="comment-content" data-original-content="<%= comment.content %>">
+    <% if (comment.is_deleted) { %>
+    <em class="deleted-comment">[deleted]</em>
+    <% } else { %>
+    <%= comment.content %>
+    <% } %>
+  </div>
+  <div class="comment-actions">
+    <% if (!comment.is_deleted) { %>
+    <button class="reply-button" type="button">Reply</button>
+    <% if (typeof userId !== 'undefined' && userId === comment.user_id) { %>
+    <button class="edit-button" type="button">Edit</button>
+    <button class="delete-button" type="button">Delete</button>
+    <% } %>
+    <% } %>
+  </div>
+  <% if (comment.replies && comment.replies.length > 0) { %>
+  <div class="replies">
+    <% comment.replies.forEach(reply => { %>
+    <%- include('comment', { comment: reply, depth: (depth || 0) + 1, story: locals.story, chapter: locals.chapter, userId: locals.userId, timeAgo: locals.timeAgo, formatRawDate: locals.formatRawDate }) %>
+    <% }) %>
+  </div>
+  <% } %>
+</div>

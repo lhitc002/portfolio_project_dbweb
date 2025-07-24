@@ -131,7 +131,8 @@ exports.chapterDetail = async (req, res) => {
             prevChapter,
             nextChapter,
             comments,
-            title: `${story.title} - Chapter ${chapterNum}`
+            title: `${story.title} - Chapter ${chapterNum}`,
+            userId: req.session.userId,
         });
     } catch (err) {
         logger.error(`${loggingPrefix} Database error`, { error: err.message, stack: err.stack });
@@ -139,8 +140,179 @@ exports.chapterDetail = async (req, res) => {
     }
 };
 
+exports.addComment = async (req, res) => {
+    const userId = req.session.userId;
+    if (!userId) {
+        // redirect or error out here
+        return res.redirect('/auth/login');
+    }
+
+    const { content, parent_id } = req.body;
+    const username = req.params.username;
+    const vanity = req.params.vanity;
+    const chapterNum = parseInt(req.params.chapternum, 10);
+
+    if (!content || isNaN(chapterNum)) {
+        return res.status(400).render('error', { message: 'Invalid comment data' });
+    }
+
+    try {
+        // 1) fetch story & verify it exists
+        const story = await db
+            .table('story_summary')
+            .join('users', 'story_summary.user_id', '=', 'users.id')
+            .select('story_summary.*', 'users.username')
+            .whereField('users.username', username)
+            .whereField('story_summary.vanity', vanity)
+            .first();
+
+        if (!story) {
+            logger.warn(`${loggingPrefix} Story not found in addComment`, { username, vanity });
+            return res.status(404).render('error', { message: 'Story not found' });
+        }
+
+        // 2) fetch the chapter
+        const chapter = await db
+            .table('chapters')
+            .whereField('story_id', story.id)
+            .whereField('chapter_num', chapterNum)
+            .first();
+
+        if (!chapter) {
+            logger.warn(`${loggingPrefix} Chapter not found in addComment`, { storyId: story.id, chapterNum });
+            return res.status(404).render('error', { message: 'Chapter not found' });
+        }
+
+        // 3) insert the comment
+        await db.table('comments').insert({
+            user_id: userId,
+            chapter_id: chapter.id,
+            parent_id: parent_id || null,
+            content
+        });
+
+        return res.redirect('back');
+    } catch (err) {
+        logger.error(`${loggingPrefix} Comment insert error`, { error: err.message, stack: err.stack });
+        return res.status(500).render('error', { message: 'Database error' });
+    }
+};
+
+exports.editComment = async (req, res) => {
+    // Check if this is actually a delete request disguised as edit
+    if (req.body._method === 'DELETE' || req.query._method === 'DELETE') {
+        return exports.deleteComment(req, res);
+    }
+
+    const userId = req.session.userId;
+    if (!userId) {
+        return res.redirect('/auth/login');
+    }
+
+    const { content } = req.body;
+    const commentId = parseInt(req.params.commentId, 10);
+    const username = req.params.username;
+    const vanity = req.params.vanity;
+    const chapterNum = parseInt(req.params.chapternum, 10);
+
+    if (!content || isNaN(commentId) || isNaN(chapterNum)) {
+        return res.status(400).render('error', { message: 'Invalid comment data' });
+    }
+
+    try {
+        // 1) Verify the comment exists and belongs to the user
+        const comment = await db
+            .table('comments')
+            .join('users', 'comments.user_id', '=', 'users.id')
+            .select('comments.*', 'users.username')
+            .whereField('comments.id', commentId)
+            .whereField('comments.user_id', userId)
+            .first();
+
+        if (!comment) {
+            logger.warn(`${loggingPrefix} Comment not found or unauthorized in editComment`, { commentId, userId });
+            return res.status(404).render('error', { message: 'Comment not found or unauthorized' });
+        }
+
+        // 2) Update the comment
+        await db.table('comments')
+            .whereField('id', commentId)
+            .whereField('user_id', userId)
+            .update({ content });
+
+        logger.info(`${loggingPrefix} Comment updated`, { commentId, userId, content: content.substring(0, 50) + '...' });
+        return res.redirect('back');
+    } catch (err) {
+        logger.error(`${loggingPrefix} Comment update error`, { error: err.message, stack: err.stack });
+        return res.status(500).render('error', { message: 'Database error' });
+    }
+};
+
+exports.deleteComment = async (req, res) => {
+    const userId = req.session.userId;
+    if (!userId) {
+        return res.redirect('/auth/login');
+    }
+
+    const commentId = parseInt(req.params.commentId, 10);
+    const username = req.params.username;
+    const vanity = req.params.vanity;
+    const chapterNum = parseInt(req.params.chapternum, 10);
+
+    if (isNaN(commentId) || isNaN(chapterNum)) {
+        return res.status(400).render('error', { message: 'Invalid comment ID' });
+    }
+
+    try {
+        // 1) Verify the comment exists and belongs to the user
+        const comment = await db
+            .table('comments')
+            .join('users', 'comments.user_id', '=', 'users.id')
+            .select('comments.*', 'users.username')
+            .whereField('comments.id', commentId)
+            .whereField('comments.user_id', userId)
+            .first();
+
+        if (!comment) {
+            logger.warn(`${loggingPrefix} Comment not found or unauthorized in deleteComment`, { commentId, userId });
+            return res.status(404).render('error', { message: 'Comment not found or unauthorized' });
+        }
+
+        // 2) Check if comment has replies - you might want to handle this differently
+        const replyCount = await db.table('comments')
+            .whereField('parent_id', commentId)
+            .count();
+
+        if (replyCount > 0) {
+            // Option 1: Soft delete - mark as deleted but keep structure
+            await db.table('comments')
+                .whereField('id', commentId)
+                .whereField('user_id', userId)
+                .update({
+                    content: '[deleted]',
+                    is_deleted: true
+                });
+        } else {
+            // Option 2: Hard delete if no replies
+            await db.table('comments')
+                .whereField('id', commentId)
+                .whereField('user_id', userId)
+                .delete();
+        }
+
+        logger.info(`${loggingPrefix} Comment deleted`, { commentId, userId, hadReplies: replyCount > 0 });
+        return res.redirect('back');
+    } catch (err) {
+        logger.error(`${loggingPrefix} Comment delete error`, { error: err.message, stack: err.stack });
+        return res.status(500).render('error', { message: 'Database error' });
+    }
+};
+
 exports.routes = {
     'GET /': 'index',
     'GET /:username/:vanity': 'storyDetail',
-    'GET /:username/:vanity/chapter/:chapternum': 'chapterDetail'
+    'GET /:username/:vanity/chapter/:chapternum': 'chapterDetail',
+    'POST /:username/:vanity/chapter/:chapternum/comments': 'addComment',
+    'POST /:username/:vanity/chapter/:chapternum/comments/:commentId/edit': 'editComment',
+    'POST /:username/:vanity/chapter/:chapternum/comments/:commentId/delete': 'deleteComment',
 };

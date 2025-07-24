@@ -101,24 +101,343 @@
         h3 {
             color: $primary-color;
             margin-bottom: 1rem;
+            font-size: 1.3rem;
+            font-weight: 600;
         }
 
         .comment {
             margin-bottom: 1rem;
-            padding-bottom: 1rem;
+            padding: 1rem 0 1rem 15px;
+            border-left: 2px solid color.scale($primary-color, $lightness: 60%);
             border-bottom: 1px solid color.scale($text-color, $lightness: 80%);
+            position: relative;
+            transition: border-left-color 0.2s ease;
+
+            &:hover {
+                border-left-color: color.scale($primary-color, $lightness: 20%);
+            }
+
+            // Nested comments styling with deeper indentation
+            .comment {
+                border-left-color: color.scale($primary-color, $lightness: 40%);
+                margin-top: 0.75rem;
+                margin-bottom: 0.75rem;
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+                background: color.scale($text-color, $lightness: 95%);
+                border-radius: 4px;
+
+                &:hover {
+                    border-left-color: color.scale($primary-color, $lightness: 10%);
+                    background: color.scale($text-color, $lightness: 92%);
+                }
+
+                // Third level and beyond
+                .comment {
+                    border-left-color: color.scale($primary-color, $lightness: 20%);
+                    background: color.scale($text-color, $lightness: 90%);
+
+                    &:hover {
+                        border-left-color: $primary-color;
+                        background: color.scale($text-color, $lightness: 87%);
+                    }
+                }
+            }
 
             .comment-header {
                 display: flex;
                 justify-content: space-between;
+                align-items: center;
                 font-weight: 600;
                 color: color.scale($text-color, $lightness: -20%);
-                margin-bottom: 0.25rem;
+                margin-bottom: 0.5rem;
+                font-size: 0.9rem;
+
+                a {
+                    color: $primary-color;
+                    text-decoration: none;
+                    transition: color 0.2s;
+                    font-weight: 700;
+
+                    &:hover {
+                        color: color.scale($primary-color, $lightness: -15%);
+                        text-decoration: underline;
+                    }
+                }
+
+                .comment-date {
+                    font-size: 0.8rem;
+                    font-weight: 400;
+                    color: color.scale($text-color, $lightness: -50%);
+                }
             }
 
             .comment-content {
                 font-size: 0.95rem;
                 color: $text-color;
+                margin-bottom: 0.75rem;
+                line-height: 1.5;
+                word-wrap: break-word;
+            }
+
+            .comment-actions {
+                display: flex;
+                gap: 0.75rem;
+                align-items: center;
+                margin-top: 0.5rem;
+                flex-wrap: wrap;
+            }
+
+            .reply-button,
+            .edit-button,
+            .delete-button {
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                padding: 0.25rem 0.5rem;
+                font-size: 0.85rem;
+                border-radius: 3px;
+                transition: all 0.2s ease;
+                font-weight: 500;
+            }
+
+            .reply-button {
+                color: $primary-color;
+
+                &:hover {
+                    color: color.scale($primary-color, $lightness: -20%);
+                    background: color.scale($primary-color, $lightness: 90%);
+                    text-decoration: underline;
+                }
+            }
+
+            .edit-button {
+                color: color.scale($primary-color, $lightness: -10%);
+
+                &:hover {
+                    color: color.scale($primary-color, $lightness: -30%);
+                    background: color.scale($primary-color, $lightness: 85%);
+                    text-decoration: underline;
+                }
+            }
+
+            .delete-button {
+                color: #dc3545;
+
+                &:hover {
+                    color: #c82333;
+                    background: color.scale(#dc3545, $lightness: 90%);
+                    text-decoration: underline;
+                }
+            }
+
+            .deleted-comment {
+                color: color.scale($text-color, $lightness: -40%);
+                font-style: italic;
+                opacity: 0.7;
+            }
+
+            .replies {
+                margin-top: 0.75rem;
+            }
+        }
+
+        // "No comments yet" message
+        >p {
+            font-style: italic;
+            color: color.scale($text-color, $lightness: -30%);
+            margin-bottom: 1rem;
+            text-align: center;
+            padding: 2rem 0;
+            background: color.scale($text-color, $lightness: 95%);
+            border-radius: 4px;
+        }
+
+        .new-comment {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            border: 2px solid color.scale($primary-color, $lightness: 60%);
+            border-radius: 8px;
+            background: color.scale($primary-color, $lightness: 95%);
+
+            h4 {
+                color: $primary-color;
+                margin-bottom: 0.75rem;
+                font-weight: 600;
+                font-size: 1.1rem;
+            }
+
+            form {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            textarea {
+                width: 100%;
+                font-family: inherit;
+                font-size: 1rem;
+                padding: 0.75rem;
+                border: 1px solid color.scale($text-color, $lightness: 70%);
+                border-radius: 6px;
+                resize: vertical;
+                color: $text-color;
+                transition: all 0.2s ease;
+                background: white;
+                min-height: 100px;
+
+                &:focus {
+                    outline: none;
+                    border-color: $primary-color;
+                    box-shadow: 0 0 5px color.scale($primary-color, $lightness: -10%, $alpha: -50%);
+                }
+
+                &::placeholder {
+                    color: color.scale($text-color, $lightness: -20%);
+                }
+            }
+
+            .submit-comment {
+                align-self: flex-start;
+                background: $primary-color;
+                border: none;
+                color: white;
+                padding: 0.75rem 1.5rem;
+                font-weight: 600;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 0.95rem;
+
+                &:hover {
+                    background: color.scale($primary-color, $lightness: -10%);
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 8px rgba($primary-color, 0.3);
+                }
+
+                &:active {
+                    transform: translateY(0);
+                }
+            }
+        }
+
+        // Dynamic comment form (for replies)
+        .comment-form,
+        .edit-form {
+            margin-top: 0.75rem;
+            padding: 1rem;
+            background: white;
+            border: 1px solid color.scale($primary-color, $lightness: 40%);
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba($primary-color, 0.1);
+
+            form {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            textarea {
+                width: 100%;
+                font-family: inherit;
+                font-size: 0.95rem;
+                padding: 0.5rem;
+                border: 1px solid color.scale($text-color, $lightness: 70%);
+                border-radius: 4px;
+                resize: vertical;
+                color: $text-color;
+                transition: all 0.2s ease;
+                min-height: 80px;
+
+                &:focus {
+                    outline: none;
+                    border-color: $primary-color;
+                    box-shadow: 0 0 3px color.scale($primary-color, $lightness: -10%, $alpha: -50%);
+                }
+
+                &::placeholder {
+                    color: color.scale($text-color, $lightness: -20%);
+                }
+            }
+
+            .form-actions {
+                display: flex;
+                gap: 0.5rem;
+                align-items: center;
+            }
+
+            .submit-comment {
+                background: $primary-color;
+                border: none;
+                color: white;
+                padding: 0.5rem 1rem;
+                font-weight: 600;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                font-size: 0.9rem;
+
+                &:hover {
+                    background: color.scale($primary-color, $lightness: -10%);
+                }
+            }
+
+            .cancel-comment,
+            .cancel-edit {
+                background: transparent;
+                border: 1px solid color.scale($text-color, $lightness: 60%);
+                color: color.scale($text-color, $lightness: -30%);
+                padding: 0.5rem 1rem;
+                font-weight: 500;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                font-size: 0.9rem;
+
+                &:hover {
+                    background: color.scale($text-color, $lightness: 90%);
+                    border-color: color.scale($text-color, $lightness: 40%);
+                }
+            }
+        }
+
+        // Edit form specific styling
+        .edit-form {
+            border-color: color.scale($primary-color, $lightness: 20%);
+            background: color.scale($primary-color, $lightness: 97%);
+
+            .submit-comment {
+                background: color.scale($primary-color, $lightness: -5%);
+
+                &:hover {
+                    background: color.scale($primary-color, $lightness: -15%);
+                }
+            }
+        }
+    }
+
+    // Responsive adjustments
+    @media (max-width: 768px) {
+        padding: 1rem;
+        margin: 1rem;
+
+        .chapter-navigation {
+            flex-direction: column;
+            gap: 0.5rem;
+
+            a.nav-button {
+                text-align: center;
+            }
+        }
+
+        .comments-section {
+            .comment {
+                // Reduce indentation on mobile
+                padding-left: 10px;
+
+                .comment {
+                    margin-left: 10px !important;
+                }
             }
         }
     }

@@ -609,22 +609,306 @@ footer {
 .chapter-reader .comments-section h3 {
   color: #2a9d8f;
   margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: 600;
 }
 .chapter-reader .comments-section .comment {
   margin-bottom: 1rem;
-  padding-bottom: 1rem;
+  padding: 1rem 0 1rem 15px;
+  border-left: 2px solid rgb(156.8552763819, 228.7447236181, 219.9929648241);
   border-bottom: 1px solid rgb(214.2, 214.2, 214.2);
+  position: relative;
+  transition: border-left-color 0.2s ease;
+}
+.chapter-reader .comments-section .comment:hover {
+  border-left-color: rgb(58.7105527638, 202.4894472362, 184.9859296482);
+}
+.chapter-reader .comments-section .comment .comment {
+  border-left-color: rgb(107.7829145729, 215.6170854271, 202.4894472362);
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  background: rgb(244.8, 244.8, 244.8);
+  border-radius: 4px;
+}
+.chapter-reader .comments-section .comment .comment:hover {
+  border-left-color: rgb(48.5638190955, 181.5361809045, 165.348241206);
+  background: rgb(238.68, 238.68, 238.68);
+}
+.chapter-reader .comments-section .comment .comment .comment {
+  border-left-color: rgb(58.7105527638, 202.4894472362, 184.9859296482);
+  background: rgb(234.6, 234.6, 234.6);
+}
+.chapter-reader .comments-section .comment .comment .comment:hover {
+  border-left-color: #2a9d8f;
+  background: rgb(228.48, 228.48, 228.48);
 }
 .chapter-reader .comments-section .comment .comment-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-weight: 600;
   color: rgb(40.8, 40.8, 40.8);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+.chapter-reader .comments-section .comment .comment-header a {
+  color: #2a9d8f;
+  text-decoration: none;
+  transition: color 0.2s;
+  font-weight: 700;
+}
+.chapter-reader .comments-section .comment .comment-header a:hover {
+  color: rgb(35.7, 133.45, 121.55);
+  text-decoration: underline;
+}
+.chapter-reader .comments-section .comment .comment-header .comment-date {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: rgb(25.5, 25.5, 25.5);
 }
 .chapter-reader .comments-section .comment .comment-content {
   font-size: 0.95rem;
   color: #333;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+.chapter-reader .comments-section .comment .comment-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+.chapter-reader .comments-section .comment .reply-button,
+.chapter-reader .comments-section .comment .edit-button,
+.chapter-reader .comments-section .comment .delete-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+.chapter-reader .comments-section .comment .reply-button {
+  color: #2a9d8f;
+}
+.chapter-reader .comments-section .comment .reply-button:hover {
+  color: rgb(33.6, 125.6, 114.4);
+  background: rgb(230.4638190955, 248.4361809045, 246.248241206);
+  text-decoration: underline;
+}
+.chapter-reader .comments-section .comment .edit-button {
+  color: rgb(37.8, 141.3, 128.7);
+}
+.chapter-reader .comments-section .comment .edit-button:hover {
+  color: rgb(29.4, 109.9, 100.1);
+  background: rgb(218.1957286432, 245.1542713568, 241.872361809);
+  text-decoration: underline;
+}
+.chapter-reader .comments-section .comment .delete-button {
+  color: #dc3545;
+}
+.chapter-reader .comments-section .comment .delete-button:hover {
+  color: #c82333;
+  background: rgb(251.5, 234.8, 236.4);
+  text-decoration: underline;
+}
+.chapter-reader .comments-section .comment .deleted-comment {
+  color: rgb(30.6, 30.6, 30.6);
+  font-style: italic;
+  opacity: 0.7;
+}
+.chapter-reader .comments-section .comment .replies {
+  margin-top: 0.75rem;
+}
+.chapter-reader .comments-section > p {
+  font-style: italic;
+  color: rgb(35.7, 35.7, 35.7);
+  margin-bottom: 1rem;
+  text-align: center;
+  padding: 2rem 0;
+  background: rgb(244.8, 244.8, 244.8);
+  border-radius: 4px;
+}
+.chapter-reader .comments-section .new-comment {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border: 2px solid rgb(156.8552763819, 228.7447236181, 219.9929648241);
+  border-radius: 8px;
+  background: rgb(242.7319095477, 251.7180904523, 250.624120603);
+}
+.chapter-reader .comments-section .new-comment h4 {
+  color: #2a9d8f;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.chapter-reader .comments-section .new-comment form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.chapter-reader .comments-section .new-comment textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.75rem;
+  border: 1px solid rgb(193.8, 193.8, 193.8);
+  border-radius: 6px;
+  resize: vertical;
+  color: #333;
+  transition: all 0.2s ease;
+  background: white;
+  min-height: 100px;
+}
+.chapter-reader .comments-section .new-comment textarea:focus {
+  outline: none;
+  border-color: #2a9d8f;
+  box-shadow: 0 0 5px rgba(37.8, 141.3, 128.7, 0.5);
+}
+.chapter-reader .comments-section .new-comment textarea::-moz-placeholder {
+  color: rgb(40.8, 40.8, 40.8);
+}
+.chapter-reader .comments-section .new-comment textarea::placeholder {
+  color: rgb(40.8, 40.8, 40.8);
+}
+.chapter-reader .comments-section .new-comment .submit-comment {
+  align-self: flex-start;
+  background: #2a9d8f;
+  border: none;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+.chapter-reader .comments-section .new-comment .submit-comment:hover {
+  background: rgb(37.8, 141.3, 128.7);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(42, 157, 143, 0.3);
+}
+.chapter-reader .comments-section .new-comment .submit-comment:active {
+  transform: translateY(0);
+}
+.chapter-reader .comments-section .comment-form,
+.chapter-reader .comments-section .edit-form {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  background: white;
+  border: 1px solid rgb(107.7829145729, 215.6170854271, 202.4894472362);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(42, 157, 143, 0.1);
+}
+.chapter-reader .comments-section .comment-form form,
+.chapter-reader .comments-section .edit-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.chapter-reader .comments-section .comment-form textarea,
+.chapter-reader .comments-section .edit-form textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.5rem;
+  border: 1px solid rgb(193.8, 193.8, 193.8);
+  border-radius: 4px;
+  resize: vertical;
+  color: #333;
+  transition: all 0.2s ease;
+  min-height: 80px;
+}
+.chapter-reader .comments-section .comment-form textarea:focus,
+.chapter-reader .comments-section .edit-form textarea:focus {
+  outline: none;
+  border-color: #2a9d8f;
+  box-shadow: 0 0 3px rgba(37.8, 141.3, 128.7, 0.5);
+}
+.chapter-reader .comments-section .comment-form textarea::-moz-placeholder, .chapter-reader .comments-section .edit-form textarea::-moz-placeholder {
+  color: rgb(40.8, 40.8, 40.8);
+}
+.chapter-reader .comments-section .comment-form textarea::placeholder,
+.chapter-reader .comments-section .edit-form textarea::placeholder {
+  color: rgb(40.8, 40.8, 40.8);
+}
+.chapter-reader .comments-section .comment-form .form-actions,
+.chapter-reader .comments-section .edit-form .form-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.chapter-reader .comments-section .comment-form .submit-comment,
+.chapter-reader .comments-section .edit-form .submit-comment {
+  background: #2a9d8f;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+.chapter-reader .comments-section .comment-form .submit-comment:hover,
+.chapter-reader .comments-section .edit-form .submit-comment:hover {
+  background: rgb(37.8, 141.3, 128.7);
+}
+.chapter-reader .comments-section .comment-form .cancel-comment,
+.chapter-reader .comments-section .comment-form .cancel-edit,
+.chapter-reader .comments-section .edit-form .cancel-comment,
+.chapter-reader .comments-section .edit-form .cancel-edit {
+  background: transparent;
+  border: 1px solid rgb(173.4, 173.4, 173.4);
+  color: rgb(35.7, 35.7, 35.7);
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+.chapter-reader .comments-section .comment-form .cancel-comment:hover,
+.chapter-reader .comments-section .comment-form .cancel-edit:hover,
+.chapter-reader .comments-section .edit-form .cancel-comment:hover,
+.chapter-reader .comments-section .edit-form .cancel-edit:hover {
+  background: rgb(234.6, 234.6, 234.6);
+  border-color: rgb(132.6, 132.6, 132.6);
+}
+.chapter-reader .comments-section .edit-form {
+  border-color: rgb(58.7105527638, 202.4894472362, 184.9859296482);
+  background: rgb(247.6391457286, 253.0308542714, 252.3744723618);
+}
+.chapter-reader .comments-section .edit-form .submit-comment {
+  background: rgb(39.9, 149.15, 135.85);
+}
+.chapter-reader .comments-section .edit-form .submit-comment:hover {
+  background: rgb(35.7, 133.45, 121.55);
+}
+@media (max-width: 768px) {
+  .chapter-reader {
+    padding: 1rem;
+    margin: 1rem;
+  }
+  .chapter-reader .chapter-navigation {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .chapter-reader .chapter-navigation a.nav-button {
+    text-align: center;
+  }
+  .chapter-reader .comments-section .comment {
+    padding-left: 10px;
+  }
+  .chapter-reader .comments-section .comment .comment {
+    margin-left: 10px !important;
+  }
 }
 
 .collections-page {
