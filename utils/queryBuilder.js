@@ -105,7 +105,7 @@ class QueryBuilder {
     }
 
     // Simpler insert method
-    async insert(data) {
+    async insertAsync(data) {
         const insertData = data || this.insertData;
         if (!insertData) {
             throw new Error('No data provided to insert');
