@@ -21,7 +21,13 @@
 
   <!-- Stories Box -->
   <div class="stories-box">
-    <h2>My Stories</h2>
+    <h2>
+      <%= user.id == session.userId ? 'My Stories' : `${user.username}'s Stories` %>
+    </h2>
+    <a href="/story/create" class="btn btn-create">
+      <span class="btn-icon">✏️</span>
+      Create New Story
+    </a>
     <% if (stories && stories.length> 0) { %>
     <div class="stories-list">
       <% stories.forEach(story=> { %>
@@ -63,7 +69,9 @@
 
   <!-- Collections Box -->
   <div class="collections-box">
-    <h2>My Collections</h2>
+    <h2>
+      <%= user.id == session.userId ? 'My Collections' : `${user.username}'s Collections` %>
+    </h2>
     <% if (collections && collections.length> 0) { %>
     <div class="collections-list">
       <% collections.forEach(collection=> { %>
