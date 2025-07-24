@@ -8,7 +8,7 @@ exports.index = (req, res) => {
 
     if (req.session?.userId) {
         logger.info(`${loggingPrefix} Session found, redirecting to profile`);
-        return res.redirect(`/users/profile/${req.session.userId}`);
+        return res.redirect(`/users/profile/${req.session.username}`);
     }
 
     logger.info(`${loggingPrefix} No session, redirecting to login`);
