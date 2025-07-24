@@ -72,6 +72,10 @@
     <h2>
       <%= user.id == session.userId ? 'My Collections' : `${user.username}'s Collections` %>
     </h2>
+    <a href="/collections/create" class="btn btn-create">
+      <span class="btn-icon">✏️</span>
+      Create New Collection
+    </a>
     <% if (collections && collections.length> 0) { %>
     <div class="collections-list">
       <% collections.forEach(collection=> { %>
