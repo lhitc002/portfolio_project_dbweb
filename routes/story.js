@@ -50,10 +50,23 @@ exports.storyDetail = async (req, res) => {
             .orderBy('chapter_num', 'ASC')
             .get();
 
+        // 3) fetch user's existing rating if logged in and not author
+        let userRating = null;
+        if (req.session.userId && req.session.userId !== story.user_id) {
+            const ratingRecord = await db.table('ratings')
+                .whereField('user_id', req.session.userId)
+                .whereField('story_id', story.id)
+                .first();
+
+            if (ratingRecord) {
+                userRating = ratingRecord.rating;
+            }
+        }
+
         logger.info(`${loggingPrefix} Chapter count`, { count: chapters.length });
 
         res.render('story/detail', {
-            story, chapters, title: story.title
+            story, chapters, userRating, title: story.title
         });
     } catch (err) {
         logger.error(`${loggingPrefix} Database error`, { error: err.message, stack: err.stack });
@@ -216,7 +229,7 @@ exports.createStory = async (req, res) => {
     }
 };
 
-// validators (near validateCreateStory)
+// ---- Validators ----
 exports.validateUpdateStory = [
     body('title')
         .trim()
@@ -611,6 +624,80 @@ exports.deleteChapter = async (req, res) => {
     }
 };
 
+// ---- Validators ----
+exports.validateRating = [
+    body('rating')
+        .optional({ checkFalsy: true })  // Allow empty values
+        .isInt({ min: 1, max: 5 })
+        .withMessage('Rating must be between 1 and 5 stars')
+];
+
+// POST: rate story
+exports.rateStory = async (req, res) => {
+    const errors = validationResult(req);
+    const { username, vanity } = req.params;
+    const userId = req.session.userId;
+    const redirectUrl = `/story/${username}/${vanity}`;
+
+    if (!errors.isEmpty()) {
+        return res.redirect(`${redirectUrl}?error=${encodeURIComponent(errors.array()[0].msg)}`);
+    }
+
+    const ratingValue = parseInt(req.body.rating);
+
+    try {
+        const story = await db.table('story_summary')
+            .whereField('username', username)
+            .whereField('vanity', vanity)
+            .first();
+
+        if (!story) {
+            return res.redirect(`${redirectUrl}?error=${encodeURIComponent('Story not found')}`);
+        }
+
+        if (story.user_id === userId) {
+            return res.redirect(`${redirectUrl}?error=${encodeURIComponent("You can't rate your own story")}`);
+        }
+
+        const existingRating = await db.table('ratings')
+            .whereField('user_id', userId)
+            .whereField('story_id', story.id)
+            .first();
+
+        if (isNaN(ratingValue)) {
+            if (existingRating) {
+                await db.table('ratings')
+                    .whereField('user_id', userId)
+                    .whereField('story_id', story.id)
+                    .delete();
+                return res.redirect(`${redirectUrl}?success=${encodeURIComponent('Rating cleared successfully!')}`);
+            }
+            return res.redirect(`${redirectUrl}?info=${encodeURIComponent('No rating to clear')}`);
+        }
+
+        if (existingRating) {
+            await db.table('ratings')
+                .whereField('user_id', userId)
+                .whereField('story_id', story.id)
+                .update({
+                    rating: ratingValue,
+                    rated_at: new Date()
+                });
+        } else {
+            await db.table('ratings').insert({
+                user_id: userId,
+                story_id: story.id,
+                rating: ratingValue
+            }).insertAndGet();
+        }
+
+        return res.redirect(`${redirectUrl}?success=${encodeURIComponent('Rating submitted successfully!')}`);
+    } catch (err) {
+        logger.error(`${loggingPrefix} Rating error`, { error: err.message, stack: err.stack });
+        return res.redirect(`${redirectUrl}?error=${encodeURIComponent('Error submitting rating')}`);
+    }
+};
+
 exports.routes = {
     'GET /': 'index',
     'GET /create': 'createForm',
@@ -628,4 +715,5 @@ exports.routes = {
     'GET /:username/:vanity/edit': 'editStoryForm',
     'POST /:username/:vanity/edit': ['validateUpdateStory', 'updateStory'],
     'POST /:username/:vanity/delete': 'deleteStory',
+    'POST /:username/:vanity/rate': ['validateRating', 'rateStory']
 };

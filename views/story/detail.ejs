@@ -25,6 +25,60 @@
     </span>
   </div>
 
+  <% if (session.userId && session.userId !== story.user_id) { %>
+  <form action="/story/<%= story.username %>/<%= story.vanity %>/rate" method="POST" class="user-rating" aria-label="Rate story">
+    <h3 style="display:inline-block; margin-right:1rem;">Your Rating</h3>
+    <div class="star-rating" role="radiogroup" aria-label="Star rating" style="display:inline-flex; align-items:center;">
+      <% for (let i = 5; i >= 1; i--) { %>
+      <button type="button" class="star" data-value="<%= i %>" aria-checked="<%= userRating === i ? 'true' : 'false' %>" role="radio" tabindex="0" style="background:none; border:none; font-size:2rem; color:<%= userRating >= i ? '#ffc107' : '#ddd' %>; cursor:pointer;">★</button>
+      <% } %>
+    </div>
+    <input type="hidden" name="rating" id="rating-value" value="<%= userRating || '' %>">
+    <button type="submit" class="btn btn-primary" style="margin-left:1rem;">
+      <%= userRating ? 'Update Rating' : 'Submit Rating' %>
+    </button>
+    <button type="button" id="clear-rating" class="btn btn-secondary" style="margin-left:0.5rem;">Clear Rating</button>
+  </form>
+
+  <script>
+    const stars = document.querySelectorAll('.star-rating .star');
+    const ratingInput = document.getElementById('rating-value');
+    const clearBtn = document.getElementById('clear-rating');
+
+    stars.forEach(star => {
+      star.addEventListener('click', () => {
+        const val = star.getAttribute('data-value');
+        ratingInput.value = val;
+        stars.forEach(s => {
+          s.setAttribute('aria-checked', 'false');
+          s.style.color = '#ddd';
+        });
+        stars.forEach(s => {
+          if (s.getAttribute('data-value') <= val) s.style.color = '#ffc107';
+        });
+        star.setAttribute('aria-checked', 'true');
+      });
+    });
+
+    clearBtn.addEventListener('click', () => {
+      ratingInput.value = '';
+      stars.forEach(s => {
+        s.setAttribute('aria-checked', 'false');
+        s.style.color = '#ddd';
+      });
+      ratingInput.form.submit();
+    });
+
+    // On load, highlight stars based on userRating
+    const currentRating = ratingInput.value;
+    if (currentRating) {
+      stars.forEach(s => {
+        if (s.getAttribute('data-value') <= currentRating) s.style.color = '#ffc107';
+      });
+    }
+  </script>
+  <% } %>
+
   <% if (session.userId === story.user_id) { %>
   <div class="story-actions button-group">
     <a href="/story/<%= story.username %>/<%= story.vanity %>/edit" class="btn btn-secondary">Edit Story</a>

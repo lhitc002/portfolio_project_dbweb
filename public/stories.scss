@@ -58,6 +58,47 @@
         }
     }
 
+    .user-rating {
+        display: flex;
+        align-items: center;
+        gap: 1rem; // space between heading, stars, and button
+
+        h3 {
+            margin: 0;
+            color: $primary-color;
+            font-size: 1.2rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-start;
+
+            .star {
+                font-size: 2rem;
+                color: #ddd;
+                cursor: pointer;
+                background: none;
+                border: none;
+                padding: 0 0.1rem;
+                transition: color 0.2s;
+                user-select: none;
+
+                &:hover,
+                &:focus {
+                    color: #ffc107;
+                    outline: none;
+                }
+            }
+        }
+
+        .btn {
+            flex-shrink: 0;
+        }
+    }
+
     .story-actions {
         display: flex;
         gap: 15px;
