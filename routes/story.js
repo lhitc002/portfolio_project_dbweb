@@ -6,20 +6,8 @@ const loggingPrefix = "[STORY]";
 exports.index = async (req, res) => {
     logger.info(`${loggingPrefix} Index route hit`);
     try {
-        const stories = await db
-            .table('stories as s')
-            .select([
-                's.*',
-                'u.username',
-                'COUNT(DISTINCT c.id)     AS chapter_count',
-                'AVG(r.rating)            AS avg_rating',
-                'COUNT(DISTINCT r.user_id) AS rating_count'
-            ])
-            .join('users as u', 's.user_id = u.id')
-            .leftJoin('chapters as c', 's.id = c.story_id')
-            .leftJoin('ratings  as r', 's.id = r.story_id')
-            .groupBy(['s.id'])
-            .orderBy('s.updated_at', 'DESC')
+        const stories = await db.table('story_summary')
+            .orderBy('updated_at', 'DESC')
             .get();
 
         logger.info(`${loggingPrefix} Fetched ${stories.length} stories`);
@@ -42,19 +30,9 @@ exports.storyDetail = async (req, res) => {
 
     try {
         // 1) fetch story + ratings
-        const story = await db
-            .table('stories as s')
-            .select([
-                's.*',
-                'u.username',
-                'AVG(r.rating)            AS avg_rating',
-                'COUNT(DISTINCT r.user_id) AS rating_count'
-            ])
-            .join('users as u', 's.user_id = u.id')
-            .leftJoin('ratings as r', 's.id = r.story_id')
-            .whereField('s.id', storyId)
-            .whereField('s.user_id', userId)
-            .groupBy(['s.id'])
+        const story = await db.table('story_summary')
+            .whereField('id', storyId)
+            .whereField('user_id', userId)
             .first();
 
         if (!story) {
@@ -96,11 +74,9 @@ exports.chapterDetail = async (req, res) => {
     try {
         // verify story ownership
         const story = await db
-            .table('stories as s')
-            .select(['s.*', 'u.username'])
-            .join('users as u', 's.user_id = u.id')
-            .whereField('s.id', storyId)
-            .whereField('s.user_id', userId)
+            .table('story_summary')
+            .whereField('id', storyId)
+            .whereField('user_id', userId)
             .first();
 
         if (!story) {
@@ -142,11 +118,9 @@ exports.chapterDetail = async (req, res) => {
 
         // comments
         const comments = await db
-            .table('comments as c')
-            .select(['c.*', 'u.username'])
-            .join('users as u', 'c.user_id = u.id')
-            .whereField('c.chapter_id', chapter.id)
-            .orderBy('c.created_at', 'ASC')
+            .table('comments_with_users')
+            .whereField('chapter_id', chapter.id)
+            .orderBy('created_at', 'ASC')
             .get();
 
         res.render('story/chapter', {

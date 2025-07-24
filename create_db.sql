@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS collections (
 CREATE TABLE IF NOT EXISTS stories (
   id            INT AUTO_INCREMENT PRIMARY KEY,
   title         VARCHAR(150) NOT NULL,
+  vanity        VARCHAR(200) NOT NULL DEFAULT '',
   synopsis      TEXT,
   user_id       INT NOT NULL,
   created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -117,3 +118,102 @@ CREATE TABLE IF NOT EXISTS comments (
   FOREIGN KEY (chapter_id) REFERENCES chapters(id) ON DELETE CASCADE,
   FOREIGN KEY (parent_id)  REFERENCES comments(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+
+-- 6 Create Views
+
+-- 6.1 Story Summary (ratings, comments, chapters all joined in one table)
+CREATE OR REPLACE VIEW story_summary AS
+SELECT
+  s.id,
+  s.user_id,
+  u.username,
+  s.title,
+  s.synopsis,
+  s.created_at,
+  s.updated_at,
+  COUNT(DISTINCT c.id)     AS chapter_count,
+  AVG(r.rating)            AS avg_rating,
+  COUNT(DISTINCT r.user_id) AS rating_count
+FROM stories AS s
+  JOIN users    AS u ON s.user_id = u.id
+  LEFT JOIN chapters AS c ON c.story_id = s.id
+  LEFT JOIN ratings  AS r ON r.story_id  = s.id
+GROUP BY s.id;
+
+-- 6.2 Chapter Comments (user details with comments)
+CREATE VIEW comments_with_users AS
+SELECT 
+    c.*,
+    u.username
+FROM comments c
+JOIN users u ON c.user_id = u.id
+ORDER BY c.created_at ASC;
+
+-- 7 Create Procedures and Triggers
+
+-- 7.1 Generate Vanity URL Procedure
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS `generate_vanity`$$
+CREATE PROCEDURE `generate_vanity`(IN input_title VARCHAR(150), OUT output_vanity VARCHAR(200))
+BEGIN
+  DECLARE cleaned_title VARCHAR(200);
+  DECLARE word VARCHAR(100);
+  DECLARE result VARCHAR(200) DEFAULT '';
+  DECLARE i INT DEFAULT 1;
+  DECLARE count INT;
+
+  -- Basic sanitize and normalize spaces
+  SET cleaned_title = TRIM(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(input_title, '&', ''), '<', ''), '>', ''), '"', ''), '''', ''));
+  WHILE INSTR(cleaned_title, '  ') > 0 DO
+    SET cleaned_title = REPLACE(cleaned_title, '  ', ' ');
+  END WHILE;
+
+  SET count = 1 + LENGTH(cleaned_title) - LENGTH(REPLACE(cleaned_title, ' ', ''));
+
+  WHILE i <= count DO
+    SET word = SUBSTRING_INDEX(SUBSTRING_INDEX(cleaned_title, ' ', i), ' ', -1);
+    SET word = CONCAT(UPPER(LEFT(word,1)), LOWER(SUBSTRING(word,2)));
+    IF i = 1 THEN
+      SET result = word;
+    ELSE
+      SET result = CONCAT(result, '-', word);
+    END IF;
+    SET i = i + 1;
+  END WHILE;
+
+  SET output_vanity = result;
+END$$
+
+DELIMITER ;
+
+-- 7.2 STORIES Insert Trigger for vanity
+DELIMITER $$
+
+CREATE TRIGGER `before_stories_insert`
+BEFORE INSERT ON `stories`
+FOR EACH ROW
+BEGIN
+  DECLARE v VARCHAR(200);
+  CALL generate_vanity(NEW.title, v);
+  SET NEW.vanity = v;
+END$$
+
+DELIMITER ;
+
+-- 7.2 STORIES Update Trigger for vanity
+DELIMITER $$
+
+CREATE TRIGGER `before_stories_update`
+BEFORE UPDATE ON `stories`
+FOR EACH ROW
+BEGIN
+  DECLARE v VARCHAR(200);
+  IF NEW.title <> OLD.title THEN
+    CALL generate_vanity(NEW.title, v);
+    SET NEW.vanity = v;
+  END IF;
+END$$
+
+DELIMITER ;
