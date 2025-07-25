@@ -81,13 +81,12 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
-    const baseUrl = req.protocol + '://' + req.get('host');
-    console.log('Base URL:', baseUrl);
-    next();
-});
+    const protocol = req.protocol;
+    const host = req.get('host');
+    const originalUrl = req.originalUrl;
 
-app.use((req, res, next) => {
-    res.locals.baseUrl = req.protocol + '://' + req.get('host');
+    const baseUrl = `${protocol}://${host}${req.baseUrl}`;
+    console.log(baseUrl);  // Logs: http://www.doc.gold.ac.uk/usr/326
     next();
 });
 
