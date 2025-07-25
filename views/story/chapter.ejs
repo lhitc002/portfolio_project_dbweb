@@ -10,7 +10,7 @@
   </div>
   <div class="chapter-navigation">
     <% if (prevChapter) { %><a href="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= prevChapter.chapter_num %>" class="nav-button prev">← Previous Chapter</a><% } %>
-    <a href="/story/<%= story.username %>/<%= story.vanity %>" class="nav-button contents">Table of Contents</a>
+    <a href="<%= baseUrl %>/story/<%= story.username %>/<%= story.vanity %>" class="nav-button contents">Table of Contents</a>
     <% if (nextChapter) { %><a href="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= nextChapter.chapter_num %>" class="nav-button next">Next Chapter →</a><% } %>
   </div>
   <div class="chapter-content"><%- chapter.formattedContent %></div>
@@ -117,7 +117,7 @@
       if ($parent.length) ss.setItem('targetCommentId', $parent.data('comment-id'));
       $('<form>', {
         method: 'POST',
-        action: `/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/comments/${commentId}/delete`
+        action: `<%= baseUrl %>/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/comments/${commentId}/delete`
       }).appendTo('body').submit();
     });
 
