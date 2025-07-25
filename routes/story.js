@@ -351,7 +351,7 @@ exports.validateUpdateChapter = exports.validateCreateChapter;
 // GET: Show form to add a new chapter if authorized
 exports.createChapterForm = async (req, res) => {
     const { username, vanity } = req.params;
-    const story = await storyService.getStorySummaryByUserAndVanity(username, vanity);
+    const story = await storyService.getStorySummaryByUsernameAndVanity(username, vanity);
     if (!story || story.user_id !== req.session.userId) {
         return res.status(403).render('error', { message: 'Forbidden' });
     }
@@ -379,7 +379,7 @@ exports.createChapter = async (req, res) => {
     }
 
     try {
-        const story = await storyService.getStorySummaryByUserAndVanity(username, vanity);
+        const story = await storyService.getStorySummaryByUsernameAndVanity(username, vanity);
         if (!story || story.user_id !== req.session.userId) {
             return res.status(403).render('error', { message: 'Forbidden' });
         }
@@ -410,7 +410,7 @@ exports.editChapterForm = async (req, res) => {
     const { username, vanity, chapternum } = req.params;
     const chapNum = parseInt(chapternum, 10);
 
-    const story = await storyService.getStorySummaryByUserAndVanity(username, vanity);
+    const story = await storyService.getStorySummaryByUsernameAndVanity(username, vanity);
     if (!story || story.user_id !== req.session.userId) {
         return res.status(403).render('error', { message: 'Forbidden' });
     }
@@ -447,7 +447,7 @@ exports.updateChapter = async (req, res) => {
         });
     }
 
-    const story = await storyService.getStorySummaryByUserAndVanity(username, vanity);
+    const story = await storyService.getStorySummaryByUsernameAndVanity(username, vanity);
     if (!story || story.user_id !== req.session.userId) {
         return res.status(403).render('error', { message: 'Forbidden' });
     }
@@ -466,7 +466,7 @@ exports.deleteChapter = async (req, res) => {
     const { username, vanity, chapternum } = req.params;
     const chapNum = parseInt(chapternum, 10);
 
-    const story = await storyService.getStorySummaryByUserAndVanity(username, vanity);
+    const story = await storyService.getStorySummaryByUsernameAndVanity(username, vanity);
     if (!story || story.user_id !== req.session.userId) {
         return res.status(403).render('error', { message: 'Forbidden' });
     }

@@ -335,7 +335,7 @@ exports.createChapter = async (req, res) => {
     }
 
     try {
-        const story = await storyService.getStorySummaryByUserAndVanity(username, vanity);
+        const story = await storyService.getStorySummaryByUsernameAndVanity(username, vanity);
         if (!story || story.user_id !== userId) {
             return handleError(res, 403, 'Forbidden');
         }
@@ -383,7 +383,7 @@ exports.updateChapter = async (req, res) => {
     }
 
     try {
-        const story = await storyService.getStorySummaryByUserAndVanity(username, vanity);
+        const story = await storyService.getStorySummaryByUsernameAndVanity(username, vanity);
         if (!story || story.user_id !== userId) {
             return handleError(res, 403, 'Forbidden');
         }
