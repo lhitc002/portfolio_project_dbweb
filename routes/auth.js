@@ -1,7 +1,6 @@
-const bcrypt = require('bcrypt');
-const db = require('../utils/queryBuilder');
 const { body, validationResult } = require('express-validator');
 const logger = require('../logger');
+const authService = require('../services/authService');
 
 const logPrefix = '[AUTH]';
 
@@ -34,7 +33,6 @@ exports.loginPost = async (req, res) => {
     logger.info(`${logPrefix} POST /login - Handling login request`);
 
     const errors = validationResult(req);
-    // Sanitize input fields
     const email = req.sanitize(req.body.email);
     const password = req.sanitize(req.body.password);
 
@@ -43,65 +41,35 @@ exports.loginPost = async (req, res) => {
     if (!errors.isEmpty()) {
         const errorMsg = errors.array().map(e => e.msg).join(' ');
         logger.warn(`${logPrefix} Validation failed: ${errorMsg}`);
-        if (req.accepts('json')) {
-            return res.status(400).json({ error: errorMsg });
-        }
-        return res.status(400).render('auth/login', {
-            error: errorMsg,
-            formData: { email }
-        });
+        return handleAuthError(req, res, 'auth/login', 400, errorMsg, { email });
     }
 
     try {
-        logger.info(`${logPrefix} Querying database for user with email: ${email}`);
-        const user = await db
-            .table('users')
-            .select(['id', 'username', 'email', 'password_hash'])
-            .whereField('email', email)
-            .first();
+        logger.info(`${logPrefix} Querying for user with email: ${email}`);
+        const user = await authService.getUserByEmail(email);
 
         if (!user) {
-            logger.warn(`${logPrefix} No user found with email: ${email}`);
-            const msg = 'Invalid email or password.';
-            return req.accepts('json')
-                ? res.status(401).json({ error: msg })
-                : res.status(401).render('auth/login', {
-                    error: msg,
-                    formData: { email }
-                });
+            logger.warn(`${logPrefix} No user found for email: ${email}`);
+            return handleAuthError(req, res, 'auth/login', 401, 'Invalid email or password.', { email });
         }
 
         logger.info(`${logPrefix} User found: ID=${user.id}, Username=${user.username}`);
-        logger.info(`${logPrefix} Comparing provided password with stored hash...`);
-        const valid = await bcrypt.compare(password, user.password_hash);
+        logger.info(`${logPrefix} Comparing passwords...`);
+        const valid = await authService.comparePasswords(password, user.password_hash);
+
         if (!valid) {
             logger.warn(`${logPrefix} Password mismatch for user: ${user.username}`);
-            const msg = 'Invalid email or password.';
-            return req.accepts('json')
-                ? res.status(401).json({ error: msg })
-                : res.status(401).render('auth/login', {
-                    error: msg,
-                    formData: { email }
-                });
+            return handleAuthError(req, res, 'auth/login', 401, 'Invalid email or password.', { email });
         }
 
         req.session.userId = user.id;
         req.session.username = user.username;
-        logger.info(`${logPrefix} User logged in successfully: ${user.username} (ID: ${user.id})`);
+        logger.info(`${logPrefix} Login successful: ${user.username} (ID: ${user.id})`);
 
-        if (req.accepts('json')) {
-            return res.json({ success: true, redirect: `/users/${user.username}` });
-        }
-        res.redirect(`/users/${user.username}`);
+        return handleAuthSuccess(req, res, `/users/${user.username}`);
     } catch (err) {
         logger.error(`${logPrefix} ERROR during login: ${err.message}`, { stack: err.stack });
-        const msg = 'Server error. Please try again later.';
-        return req.accepts('json')
-            ? res.status(500).json({ error: msg })
-            : res.status(500).render('auth/login', {
-                error: msg,
-                formData: { email }
-            });
+        return handleAuthError(req, res, 'auth/login', 500, 'Server error. Please try again later.', { email });
     }
 };
 
@@ -116,84 +84,58 @@ exports.registerPost = async (req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-        const mappedErrors = errors.array().map(e => e.msg).join(' ');
-        logger.warn(`${logPrefix} Validation errors: ${mappedErrors}`);
+        const errorMsg = errors.array().map(e => e.msg).join(' ');
+        logger.warn(`${logPrefix} Validation errors: ${errorMsg}`);
         return res.status(400).render('auth/register', {
-            error: mappedErrors,
+            error: errorMsg,
             formData: req.body
         });
     }
 
-    // Sanitize inputs
     const username = req.sanitize(req.body.username);
     const email = req.sanitize(req.body.email);
     const password = req.sanitize(req.body.password);
 
-    logger.info(`${logPrefix} Proceeding with registration: username=${username}, email=${email}`);
+    logger.info(`${logPrefix} Registration attempt: username=${username}, email=${email}`);
 
     try {
-        logger.info(`${logPrefix} Checking if email already exists in database...`);
-        const existing = await db
-            .table('users')
-            .select(['id', 'email'])
-            .whereField('email', email)
-            .first();
+        logger.info(`${logPrefix} Checking email uniqueness: ${email}`);
+        const emailExists = await authService.emailExists(email);
 
-        if (existing) {
-            logger.warn(`${logPrefix} Registration failed: Email already in use: ${email}`);
+        if (emailExists) {
+            logger.warn(`${logPrefix} Email already in use: ${email}`);
             return res.status(400).render('auth/register', {
                 error: 'Email already in use.',
                 formData: { username, email }
             });
         }
 
-        logger.info(`${logPrefix} Email is unique. Proceeding to hash password...`);
-        const saltRounds = 12;
-        logger.info(`${logPrefix} Hashing password with bcrypt salt rounds: ${saltRounds}`);
-        const hash = await bcrypt.hash(password, saltRounds);
-        logger.info(`${logPrefix} Password successfully hashed: ${hash.substring(0, 10)}...`);
+        logger.info(`${logPrefix} Hashing password...`);
+        const hash = await authService.hashPassword(password);
+        logger.info(`${logPrefix} Password hashed successfully`);
 
-        const insertData = {
-            username,
-            email,
-            password_hash: hash,
-            created_at: new Date()
-        };
-
-        logger.info(`${logPrefix} Inserting new user into database...`);
-        logger.debug(`${logPrefix} Insert data: ${JSON.stringify(insertData, null, 2)}`);
-
-        const result = await db
-            .table('users')
-            .insert(insertData)
-            .insertAndGet();
+        logger.info(`${logPrefix} Creating user: ${username}`);
+        const result = await authService.createUser({ username, email, password_hash: hash });
 
         if (!result || !result.id) {
-            throw new Error('Failed to retrieve inserted user ID');
+            throw new Error('Failed to create user');
         }
 
-        const userId = result.id;
-        logger.info(`${logPrefix} New user created successfully: ID=${userId}, Username=${username}`);
-
-        req.session.userId = userId;
+        req.session.userId = result.id;
         req.session.username = username;
-        logger.info(`${logPrefix} Session set: userId=${userId}, username=${username}`);
+        logger.info(`${logPrefix} User created: ID=${result.id}, Username=${username}`);
 
         res.redirect(`/users/${username}`);
     } catch (err) {
-        logger.error(`${logPrefix} CRITICAL ERROR during registration: ${err.message}`, { stack: err.stack });
+        logger.error(`${logPrefix} ERROR during registration: ${err.message}`, { stack: err.stack });
 
-        if (err.code === '23505') {
-            logger.warn(`${logPrefix} Database unique constraint violation`);
-            return res.status(400).render('auth/register', {
-                error: 'Email or username already in use.',
-                formData: { username, email }
-            });
-        }
+        const errorMsg = err.code === '23505'
+            ? 'Email or username already in use.'
+            : 'Server error. Please try again later.';
 
         res.status(500).render('auth/register', {
-            error: 'Server error. Please try again later.',
-            formData: req.body
+            error: errorMsg,
+            formData: { username, email }
         });
     }
 };
@@ -210,6 +152,21 @@ exports.logout = (req, res) => {
         res.redirect('login');
     });
 };
+
+// Helper functions
+function handleAuthError(req, res, view, status, error, formData = {}) {
+    if (req.accepts('json')) {
+        return res.status(status).json({ error });
+    }
+    return res.status(status).render(view, { error, formData });
+}
+
+function handleAuthSuccess(req, res, redirectPath) {
+    if (req.accepts('json')) {
+        return res.json({ success: true, redirect: redirectPath });
+    }
+    return res.redirect(redirectPath);
+}
 
 exports.routes = {
     'GET /login': 'loginForm',
