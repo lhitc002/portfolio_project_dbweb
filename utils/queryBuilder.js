@@ -146,8 +146,13 @@ class QueryBuilder {
         logger.debug('QueryBuilder.insertAndGet()', { sql, values });
         try {
             const result = await query(sql, values);
-            // MySQL returns { insertId: ... } on INSERT
-            return { id: result.insertId }; // Assuming the primary key is 'id'
+            const id = result.insertId;
+            if (!id) {
+                throw new Error('Insert did not return an insertId');
+            }
+            const selectSql = `SELECT * FROM ${this.table} WHERE id = ?`;
+            const rows = await query(selectSql, [id]);
+            return rows[0];
         } catch (err) {
             logger.error('QueryBuilder.insertAndGet() failed', {
                 sql,
