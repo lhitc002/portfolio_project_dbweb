@@ -1,5 +1,5 @@
-const db = require('../utils/queryBuilder');
 const logger = require('../logger');
+const usersService = require('../services/usersService');
 
 const loggingPrefix = '[USERS]';
 
@@ -26,12 +26,7 @@ exports.profile = async (req, res) => {
 
     try {
         logger.info(`${loggingPrefix} Looking up username:`, username);
-        logger.info(`${loggingPrefix} Querying user details...`);
-        const user = await db
-            .table('users')
-            .select(['id', 'username', 'email', 'created_at'])
-            .whereField('username', username)
-            .first();
+        const user = await usersService.getUserByUsername(username);
 
         if (!user) {
             logger.warn(`${loggingPrefix} User not found for username:`, username);
@@ -40,46 +35,11 @@ exports.profile = async (req, res) => {
 
         logger.info(`${loggingPrefix} Found user:`, user.username);
         logger.info(`${loggingPrefix} Querying user stories + stats...`);
-        const stories = await db
-            .table('stories as s')
-            .select([
-                's.id',
-                's.title',
-                's.synopsis',
-                's.vanity',
-                's.created_at',
-                's.updated_at',
-                'COUNT(DISTINCT ch.id)          as chapter_count',
-                'AVG(r.rating)                 as avg_rating',
-                'COUNT(DISTINCT r.user_id)     as rating_count',
-                'COUNT(DISTINCT f.user_id)     as favorite_count'
-            ])
-            .leftJoin('chapters as ch', 's.id = ch.story_id')
-            .leftJoin('ratings  as r', 's.id = r.story_id')
-            .leftJoin('favorites as f', 's.id = f.story_id')
-            .whereField('s.user_id', user.id)
-            .groupBy([
-                's.id', 's.title', 's.synopsis', 's.vanity', 's.created_at', 's.updated_at'
-            ])
-            .orderBy('s.updated_at', 'DESC')
-            .get();
+        const stories = await usersService.getUserStories(user.id);
 
         logger.info(`${loggingPrefix} Stories fetched:`, stories.length);
         logger.info(`${loggingPrefix} Querying user collections + counts...`);
-        const collections = await db
-            .table('collections as c')
-            .select([
-                'c.id',
-                'c.title',
-                'c.description',
-                'c.created_at',
-                'COUNT(DISTINCT sc.story_id) as story_count'
-            ])
-            .leftJoin('story_collections as sc', 'c.id = sc.collection_id')
-            .whereField('c.user_id', user.id)
-            .groupBy(['c.id', 'c.title', 'c.description', 'c.created_at'])
-            .orderBy('c.created_at', 'DESC')
-            .get();
+        const collections = await usersService.getUserCollections(user.id);
 
         logger.info(`${loggingPrefix} Collections fetched:`, collections.length);
         logger.info(`${loggingPrefix} Rendering dashboard for:`, user);
