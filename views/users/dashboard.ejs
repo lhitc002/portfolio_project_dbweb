@@ -24,10 +24,12 @@
     <h2>
       <%= user.id == session.userId ? 'My Stories' : `${user.username}'s Stories` %>
     </h2>
+    <% if (user.id == session.userId) { %>
     <a href="/story/create" class="btn btn-create">
       <span class="btn-icon">✏️</span>
       Create New Story
     </a>
+    <% } %>
     <% if (stories && stories.length> 0) { %>
     <div class="stories-list">
       <% stories.forEach(story=> { %>
@@ -72,10 +74,13 @@
     <h2>
       <%= user.id == session.userId ? 'My Collections' : `${user.username}'s Collections` %>
     </h2>
+    <% if (user.id == session.userId) { %>
     <a href="/collections/create" class="btn btn-create">
       <span class="btn-icon">✏️</span>
       Create New Collection
     </a>
+    <% } %>
+
     <% if (collections && collections.length> 0) { %>
     <div class="collections-list">
       <% collections.forEach(collection=> { %>
