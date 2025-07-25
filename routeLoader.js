@@ -4,16 +4,6 @@ const { Router } = require('express');
 
 const BASE_PATH = '/usr/326';
 
-// Middleware: Enforce URL always starts with BASE_PATH
-function enforceBasePath(req, res, next) {
-    if (!req.path.startsWith(BASE_PATH)) {
-        const query = req.url.slice(req.path.length);
-        return res.redirect(BASE_PATH + req.path + query);
-    }
-    next();
-}
-
-// Patch res.redirect globally per response
 function patchRedirect(res) {
     if (res._redirectPatched) return;
 
@@ -34,10 +24,7 @@ function loadRoutes(app) {
     const routesDir = path.join(__dirname, 'routes');
     const viewsDir = path.join(__dirname, 'views');
 
-    // Insert base path enforcement before routes
-    app.use(enforceBasePath);
-
-    // Patch res.redirect sitewide
+    // Global redirect patch
     app.use((req, res, next) => {
         patchRedirect(res);
         next();
@@ -90,7 +77,7 @@ function loadRoutes(app) {
                 }
             }
 
-            app.use(BASE_PATH + baseRoute, router);
+            app.use(`${BASE_PATH}${baseRoute}`, router);
         });
 }
 
