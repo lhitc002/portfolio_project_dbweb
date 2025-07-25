@@ -1,5 +1,6 @@
 const logger = require('../logger');
 const usersService = require('../services/usersService');
+const { baseUrl } = require('../config/appSettings');
 
 const loggingPrefix = '[USERS]';
 
@@ -8,11 +9,11 @@ exports.index = (req, res) => {
 
     if (req.session?.userId) {
         logger.info(`${loggingPrefix} Session found, redirecting to profile`);
-        return res.redirect(`/users/profile/${req.session.username}`);
+        return res.redirect(`${baseUrl}/users/profile/${req.session.username}`);
     }
 
     logger.info(`${loggingPrefix} No session, redirecting to login`);
-    res.redirect('/auth/login');
+    res.redirect(`${baseUrl}/auth/login`);
 };
 
 exports.profile = async (req, res) => {

@@ -37,7 +37,7 @@
 
 <script type="text/template" id="comment-form-template">
   <div class="comment-form">
-    <form action="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/comments" method="POST">
+    <form action="<%= baseUrl %>/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/comments" method="POST">
       <input type="hidden" name="parent_id" value="__PARENT_ID__" />
       <textarea name="content" placeholder="Write your comment here..." rows="4" required></textarea>
       <div class="form-actions">
@@ -49,7 +49,7 @@
 </script>
 <script type="text/template" id="edit-form-template">
   <div class="edit-form">
-    <form action="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/comments/__COMMENT_ID__/edit" method="POST">
+    <form action="<%= baseUrl %>/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/comments/__COMMENT_ID__/edit" method="POST">
       <textarea name="content" rows="4" required>__ORIGINAL_CONTENT__</textarea>
       <div class="form-actions">
         <button type="submit" class="submit-comment">Save</button>
