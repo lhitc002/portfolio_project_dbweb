@@ -4,15 +4,18 @@ const usersService = require('../services/usersService');
 const loggingPrefix = '[USERS]';
 
 exports.index = (req, res) => {
+    const prefix = res.locals.relativePrefix || '';
     logger.info(`${loggingPrefix} Index route hit - /users/`);
 
     if (req.session?.userId) {
         logger.info(`${loggingPrefix} Session found, redirecting to profile`);
-        return res.redirect(`/users/profile/${req.session.username}`);
+        return res.redirect(
+            prefix + `users/profile/${encodeURIComponent(req.session.username)}`
+        );
     }
 
     logger.info(`${loggingPrefix} No session, redirecting to login`);
-    res.redirect('/auth/login');
+    res.redirect(prefix + 'auth/login');
 };
 
 exports.profile = async (req, res) => {
