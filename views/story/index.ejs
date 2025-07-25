@@ -3,10 +3,10 @@
   <% if (stories && stories.length> 0) { %>
   <% stories.forEach(story=> { %>
   <div class="story-card">
-    <h3><a href="../story/<%= story.username %>/<%= story.vanity %>">
+    <h3><a href="/story/<%= story.username %>/<%= story.vanity %>">
         <%= story.title %>
       </a></h3>
-    <p class="author">by <a href="../users/<%= story.username %>"><%= story.username %></a>
+    <p class="author">by <a href="/users/<%= story.username %>"><%= story.username %></a>
     </p>
     <p class="synopsis">
       <%= story.synopsis || 'No synopsis available' %>

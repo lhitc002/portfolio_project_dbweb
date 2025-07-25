@@ -130,7 +130,7 @@ exports.createStory = async (req, res) => {
             success: true,
             message: 'Story created successfully',
             story: createdStory,
-            url: `../story/${username}/${createdStory.vanity}`
+            url: `/story/${username}/${createdStory.vanity}`
         });
     } catch (err) {
         return handleError(res, 500, 'Failed to create story', err);
@@ -356,7 +356,7 @@ exports.createChapter = async (req, res) => {
             success: true,
             message: 'Chapter created successfully',
             chapter,
-            url: `../story/${username}/${vanity}/chapter/${chapNum}`
+            url: `/story/${username}/${vanity}/chapter/${chapNum}`
         });
     } catch (err) {
         return handleError(res, 500, 'Failed to create chapter', err);

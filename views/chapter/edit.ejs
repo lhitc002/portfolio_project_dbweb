@@ -12,7 +12,7 @@
   </div>
   <% } %>
 
-  <form action="../story/<%= formData.username %>/<%= formData.vanity %>/chapter/<%= formData.chapter_num %>/edit" method="POST">
+  <form action="/story/<%= formData.username %>/<%= formData.vanity %>/chapter/<%= formData.chapter_num %>/edit" method="POST">
     <div class="form-group">
       <label>Chapter <%= formData.chapter_num %></label>
     </div>
@@ -33,7 +33,7 @@
 
     <div class="button-group">
       <button type="submit" class="btn btn-primary">Save Changes</button>
-      <a href="../story/<%= formData.username %>/<%= formData.vanity %>" class="btn btn-secondary">Cancel</a>
+      <a href="/story/<%= formData.username %>/<%= formData.vanity %>" class="btn btn-secondary">Cancel</a>
     </div>
   </form>
 </div>

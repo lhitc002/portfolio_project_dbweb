@@ -1,4 +1,4 @@
-<form action="../search/results" method="get" class="search-form">
+<form action="/search/results" method="get" class="search-form">
   <div class="search-row">
     <input type="text" name="q" minlength="2" required placeholder="Search across all categories..." value="<%= typeof q !== 'undefined' ? q : '' %>" class="search-input" />
     <button type="submit" class="search-button">Search</button>
@@ -36,23 +36,23 @@
       <% results[category].forEach(item => { %>
       <li>
         <% if (category === 'users') { %>
-        <a href="../users/<%= item.username %>">
+        <a href="/users/<%= item.username %>">
           <%= item.username %>
         </a>
         <% } else if (category === 'stories') { %>
-        <a href="../story/<%= item.author_username %>/<%= item.story_vanity %>">
+        <a href="/story/<%= item.author_username %>/<%= item.story_vanity %>">
           <%= item.title %>
         </a>
         <% } else if (category === 'collections') { %>
-        <a href="../collections/<%= item.owner_username %>/<%= item.id %>">
+        <a href="/collections/<%= item.owner_username %>/<%= item.id %>">
           <%= item.title %>
         </a>
         <% } else if (category === 'comments') { %>
-        <a href="../story/<%= item.story_author_username %>/<%= item.story_vanity %>/chapter/<%= item.chapter_num %>#comment-<%= item.id %>">
+        <a href="/story/<%= item.story_author_username %>/<%= item.story_vanity %>/chapter/<%= item.chapter_num %>#comment-<%= item.id %>">
           <%= item.story_author_username %>: <%= item.content %>
         </a>
         <% } else if (category === 'chapters') { %>
-        <a href="../story/<%= item.story_author_username %>/<%= item.story_vanity %>/chapter/<%= item.chapter_num %>">
+        <a href="/story/<%= item.story_author_username %>/<%= item.story_vanity %>/chapter/<%= item.chapter_num %>">
           <%= item.title %>
         </a>
         <% } %>

@@ -15,7 +15,7 @@
   </form>
 
   <p class="text-center">
-    Don't have an account? <a href="../auth/register">Register</a>
+    Don't have an account? <a href="/auth/register">Register</a>
   </p>
 </section>
 
@@ -39,7 +39,7 @@
         });
 
         if (response.success) {
-          window.location.href = `../users/${response.user.username}`;
+          window.location.href = `/users/${response.user.username}`;
         } else {
           $('#login-error').text(response.error).show();
         }

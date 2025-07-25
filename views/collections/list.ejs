@@ -6,11 +6,11 @@
       </h2>
       <% if (session.userId && session.userId == collection.user_id) { %>
       <div class="collection-actions">
-        <a href="../collections/<%= userId %>/<%= collection.id %>/edit" class="btn btn-edit">
+        <a href="/collections/<%= userId %>/<%= collection.id %>/edit" class="btn btn-edit">
           <span class="btn-icon">✏️</span>
           Edit
         </a>
-        <form action="../collections/<%= userId %>/<%= collection.id %>/delete" method="POST" class="delete-form">
+        <form action="/collections/<%= userId %>/<%= collection.id %>/delete" method="POST" class="delete-form">
           <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure? This will permanently delete the collection.')">
             <span class="btn-icon">🗑️</span>
             Delete
@@ -39,7 +39,7 @@
     <div class="story-list">
       <% stories.forEach(story => { %>
       <div class="story-card">
-        <a href="../story/<%= story.author_username %>/<%= story.story_vanity %>">
+        <a href="/story/<%= story.author_username %>/<%= story.story_vanity %>">
           <h3>
             <%= story.title %>
           </h3>
@@ -60,6 +60,6 @@
     <% } %>
 
     <div class="back-link">
-      <a href="../collections" class="button">← Back to Collections</a>
+      <a href="/collections" class="button">← Back to Collections</a>
     </div>
   </div>

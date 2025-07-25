@@ -76,7 +76,7 @@ exports.createCollection = async (req, res) => {
     }
 
     logger.info(`${loggingPrefix} Created ${collectionId}`);
-    return res.redirect(`../collections/${req.session.userId}/${collectionId}`);
+    return res.redirect(`/collections/${req.session.userId}/${collectionId}`);
   } catch (err) {
     logger.error(`${loggingPrefix} Creation error`, err);
     return renderForm(res, 'create', {
@@ -163,7 +163,7 @@ exports.updateCollection = async (req, res) => {
     }
 
     logger.info(`${loggingPrefix} Updated ${collectionId}`);
-    return res.redirect(`../collections/${userId}/${collectionId}`);
+    return res.redirect(`/collections/${userId}/${collectionId}`);
   } catch (err) {
     logger.error(`${loggingPrefix} Update error`, err);
     return renderForm(res, 'edit', {
@@ -192,7 +192,7 @@ exports.deleteCollection = async (req, res) => {
     await collectionsService.deleteCollection(collectionId);
 
     logger.info(`${loggingPrefix} Deleted ${collectionId}`);
-    res.redirect(`../users/${req.session.username}`);
+    res.redirect(`/users/${req.session.username}`);
   } catch (err) {
     logger.error(`${loggingPrefix} Delete error`, err);
     res.status(500).render('error', { message: 'Error deleting collection' });
