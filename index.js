@@ -86,6 +86,7 @@ app.use((req, res, next) => {
     const originalUrl = req.originalUrl;
 
     const baseUrl = `${protocol}://${host}${req.baseUrl}`;
+    res.locals.baseUrl = baseUrl;
     console.log(baseUrl);  // Logs: http://www.doc.gold.ac.uk/usr/326
     next();
 });
