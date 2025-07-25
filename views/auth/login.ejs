@@ -39,7 +39,7 @@
         });
 
         if (response.success) {
-          window.location.href = `/users/${response.user.username}`;
+          window.location.href = `../users/${response.user.username}`;
         } else {
           $('#login-error').text(response.error).show();
         }
