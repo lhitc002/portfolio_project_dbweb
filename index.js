@@ -66,6 +66,20 @@ app.use((req, res, next) => {
     next();
 });
 
+// Patch res.redirect
+app.use((req, res, next) => {
+    const originalRedirect = res.redirect.bind(res);
+    res.redirect = function (url) {
+        if (typeof url === 'string' && url.startsWith('/')) {
+            if (!url.startsWith('/usr/326/')) {
+                url = '/usr/326' + (url === '/' ? '/' : url);
+            }
+        }
+        return originalRedirect(url);
+    };
+    next();
+});
+
 // Dynamically load the route handlers
 loadRoutes(app);
 
