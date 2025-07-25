@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS comments (
   parent_id    INT DEFAULT NULL,
   content      TEXT NOT NULL,
   created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  is_deleted   tinyint(1) NOT NULL DEFAULT '0',
   FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
   FOREIGN KEY (chapter_id) REFERENCES chapters(id) ON DELETE CASCADE,
   FOREIGN KEY (parent_id)  REFERENCES comments(id) ON DELETE CASCADE

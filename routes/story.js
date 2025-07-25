@@ -1,16 +1,14 @@
-const db = require('../utils/queryBuilder');
 const { body, validationResult } = require('express-validator');
 const logger = require('../logger');
+const storyService = require('../services/storyService');
 
 const loggingPrefix = "[STORY]";
 
+// GET: Render the homepage listing all stories
 exports.index = async (req, res) => {
     logger.info(`${loggingPrefix} Index route hit`);
     try {
-        const stories = await db.table('story_summary')
-            .orderBy('updated_at', 'DESC')
-            .get();
-
+        const stories = await storyService.getAllStories();
         logger.info(`${loggingPrefix} Fetched ${stories.length} stories`);
         res.render('story/index', { stories, title: 'Stories' });
     } catch (err) {
@@ -19,10 +17,9 @@ exports.index = async (req, res) => {
     }
 };
 
+// GET: Show detailed view of a specific chapter including navigation and comments and rating
 exports.storyDetail = async (req, res) => {
-    const username = req.params.username;
-    const storyVanity = req.params.vanity;
-
+    const { username, vanity: storyVanity } = req.params;
     logger.info(`${loggingPrefix} Detail route hit`, { username, storyVanity });
 
     if (!username || !storyVanity) {
@@ -30,37 +27,17 @@ exports.storyDetail = async (req, res) => {
     }
 
     try {
-        // 1) fetch story + ratings using username and story vanity
-        const story = await db.table('story_summary')
-            .whereField('username', username)
-            .whereField('vanity', storyVanity)
-            .first();
-
+        const story = await storyService.getStoryByUsernameAndVanity(username, storyVanity);
         if (!story) {
             logger.warn(`${loggingPrefix} Not found`, { username, storyVanity });
-            return res.status(404).render('error', {
-                message: 'Story not found'
-            });
+            return res.status(404).render('error', { message: 'Story not found' });
         }
 
-        // 2) fetch chapters
-        const chapters = await db
-            .table('chapters')
-            .whereField('story_id', story.id)
-            .orderBy('chapter_num', 'ASC')
-            .get();
+        const chapters = await storyService.getChaptersByStoryId(story.id);
 
-        // 3) fetch user's existing rating if logged in and not author
         let userRating = null;
         if (req.session.userId && req.session.userId !== story.user_id) {
-            const ratingRecord = await db.table('ratings')
-                .whereField('user_id', req.session.userId)
-                .whereField('story_id', story.id)
-                .first();
-
-            if (ratingRecord) {
-                userRating = ratingRecord.rating;
-            }
+            userRating = await storyService.getUserRatingForStory(req.session.userId, story.id);
         }
 
         logger.info(`${loggingPrefix} Chapter count`, { count: chapters.length });
@@ -86,58 +63,26 @@ exports.chapterDetail = async (req, res) => {
     }
 
     try {
-        // verify story exists and get story details using username and vanity
-        const story = await db
-            .table('story_summary')
-            .join('users', 'story_summary.user_id', '=', 'users.id')
-            .select('story_summary.*', 'users.username')
-            .whereField('users.username', username)
-            .whereField('story_summary.vanity', storyVanity)
-            .first();
-
+        const story = await storyService.getStoryWithUser(username, storyVanity);
         if (!story) {
             logger.warn(`${loggingPrefix} Story not found`, { username, storyVanity });
             return res.status(404).render('error', { message: 'Story not found' });
         }
 
-        // fetch chapter
-        const chapter = await db
-            .table('chapters')
-            .whereField('story_id', story.id)
-            .whereField('chapter_num', chapterNum)
-            .first();
-
+        const chapter = await storyService.getChapterByStoryIdAndNumber(story.id, chapterNum);
         if (!chapter) {
             logger.warn(`${loggingPrefix} Chapter not found`, { storyId: story.id, chapterNum });
             return res.status(404).render('error', { message: 'Chapter not found' });
         }
 
-        // format content
         const formattedContent = chapter.content
             .split('\n')
             .filter(line => line.trim())
             .map(line => `<p>${line}</p>`)
             .join('');
 
-        // prev/next nav
-        const nav = await db
-            .table('chapters')
-            .select(['chapter_num', 'title'])
-            .whereRaw('story_id = ? AND chapter_num IN (?, ?)', [
-                story.id, chapterNum - 1, chapterNum + 1
-            ])
-            .orderBy('chapter_num', 'ASC')
-            .get();
-
-        const prevChapter = nav.find(c => c.chapter_num === chapterNum - 1) || null;
-        const nextChapter = nav.find(c => c.chapter_num === chapterNum + 1) || null;
-
-        // comments
-        const comments = await db
-            .table('comments_with_users')
-            .whereField('chapter_id', chapter.id)
-            .orderBy('created_at', 'ASC')
-            .get();
+        const { prevChapter, nextChapter } = await storyService.getChapterNavigation(story.id, chapterNum);
+        const comments = await storyService.getCommentsForChapter(chapter.id);
 
         res.render('story/chapter', {
             story,
@@ -159,35 +104,24 @@ exports.validateCreateStory = [
     body('title')
         .trim()
         .isLength({ min: 3 }).withMessage('Title must be at least 3 characters long.')
-        .isLength({ max: 150 }).withMessage('Title must be less than 150 characters.')
-        .custom(async (value, { req }) => {
-            const userId = req.session.userId;
-            if (!userId) return true;
-            const existing = await db
-                .table('stories')
-                .select('id')
-                .whereField('user_id', userId)
-                .whereField('title', value)
-                .first();
-            if (existing) {
-                throw new Error('You already have a story with that title.');
-            }
-            return true;
-        }),
+        .isLength({ max: 150 }).withMessage('Title must be less than 150 characters.'),
     body('synopsis')
         .trim()
         .isLength({ min: 10 }).withMessage('Synopsis must be at least 10 characters long.')
 ];
 
 // ---- Create Story ----
+// GET: Show form for creating a new story (auth required)
 exports.createForm = (req, res) => {
     if (!req.session.userId) return res.redirect('/auth/login');
     logger.info(`${loggingPrefix} Create form accessed`, { userId: req.session.userId });
     res.render('story/create', { title: 'Create New Story', errors: null, formData: {} });
 };
 
+// POST: Validate and create a new story if data is valid and title unused
 exports.createStory = async (req, res) => {
     if (!req.session.userId) return res.redirect('/auth/login');
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const msgs = errors.array().map(e => e.msg);
@@ -198,27 +132,27 @@ exports.createStory = async (req, res) => {
         });
     }
 
+    const titleTaken = await storyService.isTitleTaken(req.session.userId, req.body.title);
+    if (titleTaken) {
+        return res.render('story/create', {
+            title: 'Create New Story',
+            errors: ['You already have a story with that title.'],
+            formData: req.body
+        });
+    }
+
     try {
-        const userId = req.session.userId;
         const { title, synopsis } = req.body;
-        const storyData = {
-            user_id: userId,
-            title: title.trim(),
-            synopsis: synopsis.trim()
-        };
-        const result = await db.table('stories').insertAsync(storyData);
-        const storyId = result.insertId || result[0];
-        const createdStory = await db.table('stories').whereField('id', storyId).first();
+        const { createdStory, username } = await storyService.createStory(req.session.userId, title, synopsis);
 
         logger.info(`${loggingPrefix} Story created successfully`, {
-            userId,
-            storyId,
+            userId: req.session.userId,
+            storyId: createdStory.id,
             title: title.substring(0, 50),
             vanity: createdStory.vanity
         });
 
-        const user = await db.table('users').whereField('id', userId).first();
-        res.redirect(`/story/${user.username}/${createdStory.vanity}`);
+        res.redirect(`/story/${username}/${createdStory.vanity}`);
     } catch (err) {
         logger.error(`${loggingPrefix} Story creation error`, { error: err.message, stack: err.stack });
         res.render('story/create', {
@@ -240,31 +174,26 @@ exports.validateUpdateStory = [
         .isLength({ min: 10 }).withMessage('Synopsis must be at least 10 characters long.')
 ];
 
-// GET form
+// GET: Show form to edit an existing story if authorized
 exports.editStoryForm = async (req, res) => {
     const { username, vanity } = req.params;
     const userId = req.session.userId;
-    const story = await db.table('story_summary')
-        .whereField('username', username)
-        .whereField('vanity', vanity)
-        .first();
 
-    if (!story || story.user_id !== userId) return res.status(403).render('error', { message: 'Forbidden' });
+    const story = await storyService.getStoryByUsernameAndVanity(username, vanity);
+    if (!story || story.user_id !== userId) {
+        return res.status(403).render('error', { message: 'Forbidden' });
+    }
     res.render('story/edit', { title: 'Edit Story', formData: story, errors: null });
 };
 
-// POST update
+// POST: Validate and update an existing story, then redirect to its detail
 exports.updateStory = async (req, res) => {
     const { username, vanity } = req.params;
     const userId = req.session.userId;
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-        const formData = {
-            ...req.body,
-            username,
-            vanity
-        };
+        const formData = { ...req.body, username, vanity };
         return res.render('story/edit', {
             title: 'Edit Story',
             errors: errors.array().map(e => e.msg),
@@ -272,114 +201,82 @@ exports.updateStory = async (req, res) => {
         });
     }
 
-    const story = await db.table('stories')
-        .whereField('vanity', vanity)
-        .whereField('user_id', userId)
-        .first();
-    if (!story) return res.status(404).render('error', { message: 'Not found' });
+    const story = await storyService.getStoryByUserIdAndVanity(userId, vanity);
+    if (!story) {
+        return res.status(404).render('error', { message: 'Not found' });
+    }
 
-    // Update title & synopsis (trigger will auto-update vanity if title changed)
-    await db.table('stories')
-        .whereField('id', story.id)
-        .update({
-            title: req.body.title.trim(),
-            synopsis: req.body.synopsis.trim()
-        });
+    await storyService.updateStoryById(story.id, req.body.title, req.body.synopsis);
 
-    // Re-fetch updated story to get the possibly changed vanity
-    const updatedStory = await db.table('stories')
-        .whereField('id', story.id)
-        .first();
+    const updatedStory = await storyService.getStoryById(story.id);
 
     res.redirect(`/story/${username}/${updatedStory.vanity}`);
 };
 
-// POST delete
+// POST: Delete an existing story if authorized
 exports.deleteStory = async (req, res) => {
     const { username, vanity } = req.params;
     const userId = req.session.userId;
-    const story = await db.table('stories')
-        .whereField('vanity', vanity)
-        .whereField('user_id', userId)
-        .first();
+
+    const story = await storyService.getStoryByUserIdAndVanity(userId, vanity);
     if (!story) return res.status(404).render('error', { message: 'Not found' });
-    await db.table('stories').whereField('id', story.id).delete();
+
+    await storyService.deleteStoryById(story.id);
+
     res.redirect('/users/');
 };
 
+// POST: Add a comment to a chapter if authorized
 exports.addComment = async (req, res) => {
     const userId = req.session.userId;
-    if (!userId) {
-        // redirect or error out here
-        return res.redirect('/auth/login');
-    }
+    if (!userId) return res.redirect('/auth/login');
 
     const { content, parent_id } = req.body;
-    const username = req.params.username;
-    const vanity = req.params.vanity;
-    const chapterNum = parseInt(req.params.chapternum, 10);
+    const { username, vanity, chapternum } = req.params;
+    const chapterNum = parseInt(chapternum, 10);
 
     if (!content || isNaN(chapterNum)) {
         return res.status(400).render('error', { message: 'Invalid comment data' });
     }
 
     try {
-        // 1) fetch story & verify it exists
-        const story = await db
-            .table('story_summary')
-            .join('users', 'story_summary.user_id', '=', 'users.id')
-            .select('story_summary.*', 'users.username')
-            .whereField('users.username', username)
-            .whereField('story_summary.vanity', vanity)
-            .first();
-
+        const story = await storyService.getStorySummaryByUsernameAndVanity(username, vanity);
         if (!story) {
             logger.warn(`${loggingPrefix} Story not found in addComment`, { username, vanity });
             return res.status(404).render('error', { message: 'Story not found' });
         }
 
-        // 2) fetch the chapter
-        const chapter = await db
-            .table('chapters')
-            .whereField('story_id', story.id)
-            .whereField('chapter_num', chapterNum)
-            .first();
-
+        const chapter = await storyService.getChapterByStoryIdAndNumber(story.id, chapterNum);
         if (!chapter) {
             logger.warn(`${loggingPrefix} Chapter not found in addComment`, { storyId: story.id, chapterNum });
             return res.status(404).render('error', { message: 'Chapter not found' });
         }
 
-        // 3) insert the comment
-        await db.table('comments').insertAsync({
-            user_id: userId,
-            chapter_id: chapter.id,
-            parent_id: parent_id || null,
+        await storyService.addComment({
+            userId,
+            chapterId: chapter.id,
+            parentId: parent_id || null,
             content
         });
 
-        return res.redirect('back');
+        res.redirect('back');
     } catch (err) {
         logger.error(`${loggingPrefix} Comment insert error`, { error: err.message, stack: err.stack });
-        return res.status(500).render('error', { message: 'Database error' });
+        res.status(500).render('error', { message: 'Database error' });
     }
 };
 
+// POST: Edit an existing comment
 exports.editComment = async (req, res) => {
-    // Check if this is actually a delete request disguised as edit
     if (req.body._method === 'DELETE' || req.query._method === 'DELETE') {
         return exports.deleteComment(req, res);
     }
 
     const userId = req.session.userId;
-    if (!userId) {
-        return res.redirect('/auth/login');
-    }
+    if (!userId) return res.redirect('/auth/login');
 
     const { content } = req.body;
     const commentId = parseInt(req.params.commentId, 10);
-    const username = req.params.username;
-    const vanity = req.params.vanity;
     const chapterNum = parseInt(req.params.chapternum, 10);
 
     if (!content || isNaN(commentId) || isNaN(chapterNum)) {
@@ -387,25 +284,13 @@ exports.editComment = async (req, res) => {
     }
 
     try {
-        // 1) Verify the comment exists and belongs to the user
-        const comment = await db
-            .table('comments')
-            .join('users', 'comments.user_id', '=', 'users.id')
-            .select('comments.*', 'users.username')
-            .whereField('comments.id', commentId)
-            .whereField('comments.user_id', userId)
-            .first();
-
+        const comment = await storyService.getCommentByIdAndUser(commentId, userId);
         if (!comment) {
             logger.warn(`${loggingPrefix} Comment not found or unauthorized in editComment`, { commentId, userId });
             return res.status(404).render('error', { message: 'Comment not found or unauthorized' });
         }
 
-        // 2) Update the comment
-        await db.table('comments')
-            .whereField('id', commentId)
-            .whereField('user_id', userId)
-            .update({ content });
+        await storyService.updateCommentByIdAndUser(commentId, userId, content);
 
         logger.info(`${loggingPrefix} Comment updated`, { commentId, userId, content: content.substring(0, 50) + '...' });
         return res.redirect('back');
@@ -415,15 +300,12 @@ exports.editComment = async (req, res) => {
     }
 };
 
+// POST: Delete (soft or hard) a comment if authorized
 exports.deleteComment = async (req, res) => {
     const userId = req.session.userId;
-    if (!userId) {
-        return res.redirect('/auth/login');
-    }
+    if (!userId) return res.redirect('/auth/login');
 
     const commentId = parseInt(req.params.commentId, 10);
-    const username = req.params.username;
-    const vanity = req.params.vanity;
     const chapterNum = parseInt(req.params.chapternum, 10);
 
     if (isNaN(commentId) || isNaN(chapterNum)) {
@@ -431,40 +313,18 @@ exports.deleteComment = async (req, res) => {
     }
 
     try {
-        // 1) Verify the comment exists and belongs to the user
-        const comment = await db
-            .table('comments')
-            .join('users', 'comments.user_id', '=', 'users.id')
-            .select('comments.*', 'users.username')
-            .whereField('comments.id', commentId)
-            .whereField('comments.user_id', userId)
-            .first();
-
+        const comment = await storyService.getCommentByIdAndUser(commentId, userId);
         if (!comment) {
             logger.warn(`${loggingPrefix} Comment not found or unauthorized in deleteComment`, { commentId, userId });
             return res.status(404).render('error', { message: 'Comment not found or unauthorized' });
         }
 
-        // 2) Check if comment has replies - you might want to handle this differently
-        const replyCount = await db.table('comments')
-            .whereField('parent_id', commentId)
-            .count();
+        const replyCount = await storyService.getReplyCountForComment(commentId);
 
         if (replyCount > 0) {
-            // Option 1: Soft delete - mark as deleted but keep structure
-            await db.table('comments')
-                .whereField('id', commentId)
-                .whereField('user_id', userId)
-                .update({
-                    content: '[deleted]',
-                    is_deleted: true
-                });
+            await storyService.softDeleteComment(commentId, userId);
         } else {
-            // Option 2: Hard delete if no replies
-            await db.table('comments')
-                .whereField('id', commentId)
-                .whereField('user_id', userId)
-                .delete();
+            await storyService.hardDeleteComment(commentId, userId);
         }
 
         logger.info(`${loggingPrefix} Comment deleted`, { commentId, userId, hadReplies: replyCount > 0 });
@@ -488,24 +348,26 @@ exports.validateCreateChapter = [
 
 exports.validateUpdateChapter = exports.validateCreateChapter;
 
-// GET: show form to add chapter
+// GET: Show form to add a new chapter if authorized
 exports.createChapterForm = async (req, res) => {
     const { username, vanity } = req.params;
-    const story = await db.table('story_summary')
-        .whereField('username', username)
-        .whereField('vanity', vanity)
-        .first();
+    const story = await storyService.getStorySummaryByUserAndVanity(username, vanity);
     if (!story || story.user_id !== req.session.userId) {
         return res.status(403).render('error', { message: 'Forbidden' });
     }
-    res.render('chapter/create', { title: 'Add Chapter', errors: null, formData: { username, vanity, chapter_num: '', title: '', content: '' } });
+    res.render('chapter/create', {
+        title: 'Add Chapter',
+        errors: null,
+        formData: { username, vanity, chapter_num: '', title: '', content: '' }
+    });
 };
 
-// POST: create chapter
+// POST: Validate and create a new chapter if authorized and chapter number unused
 exports.createChapter = async (req, res) => {
     const { username, vanity } = req.params;
     const chapNum = parseInt(req.body.chapter_num, 10);
     const errors = validationResult(req);
+
     if (!errors.isEmpty() || isNaN(chapNum)) {
         const msgs = errors.array().map(e => e.msg);
         if (isNaN(chapNum)) msgs.push('Invalid chapter number');
@@ -515,21 +377,14 @@ exports.createChapter = async (req, res) => {
             formData: { username, vanity, chapter_num: req.body.chapter_num, title: req.body.title, content: req.body.content }
         });
     }
+
     try {
-        const story = await db.table('story_summary')
-            .whereField('username', username)
-            .whereField('vanity', vanity)
-            .first();
+        const story = await storyService.getStorySummaryByUserAndVanity(username, vanity);
         if (!story || story.user_id !== req.session.userId) {
             return res.status(403).render('error', { message: 'Forbidden' });
         }
 
-        // Check for duplicate chapter number
-        const existingChapter = await db.table('chapters')
-            .whereField('story_id', story.id)
-            .whereField('chapter_num', chapNum)
-            .first();
-
+        const existingChapter = await storyService.chapterExists(story.id, chapNum);
         if (existingChapter) {
             return res.render('chapter/create', {
                 title: 'Add Chapter',
@@ -538,43 +393,52 @@ exports.createChapter = async (req, res) => {
             });
         }
 
-        await db.table('chapters').insertAsync({
-            story_id: story.id,
-            chapter_num: chapNum,
-            title: req.body.title.trim(),
-            content: req.body.content.trim()
-        });
+        await storyService.createChapter(story.id, chapNum, req.body.title, req.body.content);
         res.redirect(`/story/${username}/${vanity}`);
     } catch (err) {
         logger.error(`${loggingPrefix} Chapter create error`, { error: err.message, stack: err.stack });
-        res.render('chapter/create', { title: 'Add Chapter', errors: ['Error creating chapter'], formData: req.body });
+        res.render('chapter/create', {
+            title: 'Add Chapter',
+            errors: ['Error creating chapter'],
+            formData: req.body
+        });
     }
 };
 
-// GET: edit chapter form
+// GET: Show form to edit a chapter if authorized
 exports.editChapterForm = async (req, res) => {
     const { username, vanity, chapternum } = req.params;
-    const story = await db.table('story_summary')
-        .whereField('username', username)
-        .whereField('vanity', vanity)
-        .first();
     const chapNum = parseInt(chapternum, 10);
+
+    const story = await storyService.getStorySummaryByUserAndVanity(username, vanity);
     if (!story || story.user_id !== req.session.userId) {
         return res.status(403).render('error', { message: 'Forbidden' });
     }
-    const chapter = await db.table('chapters')
-        .whereField('story_id', story.id)
-        .whereField('chapter_num', chapNum)
-        .first();
-    if (!chapter) return res.status(404).render('error', { message: 'Chapter not found' });
-    res.render('chapter/edit', { title: 'Edit Chapter', errors: null, formData: { username, vanity, chapter_num: chapNum, title: chapter.title, content: chapter.content } });
+
+    const chapter = await storyService.getChapterByStoryIdAndNumber(story.id, chapNum);
+    if (!chapter) {
+        return res.status(404).render('error', { message: 'Chapter not found' });
+    }
+
+    res.render('chapter/edit', {
+        title: 'Edit Chapter',
+        errors: null,
+        formData: {
+            username,
+            vanity,
+            chapter_num: chapNum,
+            title: chapter.title,
+            content: chapter.content
+        }
+    });
 };
 
-// POST: update chapter
+// POST: Validate and update a chapter if authorized
 exports.updateChapter = async (req, res) => {
     const { username, vanity, chapternum } = req.params;
     const chapNum = parseInt(chapternum, 10);
     const errors = validationResult(req);
+
     if (!errors.isEmpty()) {
         return res.render('chapter/edit', {
             title: 'Edit Chapter',
@@ -582,18 +446,14 @@ exports.updateChapter = async (req, res) => {
             formData: { username, vanity, chapter_num: chapternum, title: req.body.title, content: req.body.content }
         });
     }
+
+    const story = await storyService.getStorySummaryByUserAndVanity(username, vanity);
+    if (!story || story.user_id !== req.session.userId) {
+        return res.status(403).render('error', { message: 'Forbidden' });
+    }
+
     try {
-        const story = await db.table('story_summary')
-            .whereField('username', username)
-            .whereField('vanity', vanity)
-            .first();
-        if (!story || story.user_id !== req.session.userId) {
-            return res.status(403).render('error', { message: 'Forbidden' });
-        }
-        await db.table('chapters')
-            .whereField('story_id', story.id)
-            .whereField('chapter_num', chapNum)
-            .update({ title: req.body.title.trim(), content: req.body.content.trim() });
+        await storyService.updateChapter(story.id, chapNum, req.body);
         res.redirect(`/story/${username}/${vanity}/chapter/${chapNum}`);
     } catch (err) {
         logger.error(`${loggingPrefix} Chapter update error`, { error: err.message, stack: err.stack });
@@ -601,22 +461,18 @@ exports.updateChapter = async (req, res) => {
     }
 };
 
-// POST: delete chapter
+// POST: Delete a chapter if authorized
 exports.deleteChapter = async (req, res) => {
     const { username, vanity, chapternum } = req.params;
     const chapNum = parseInt(chapternum, 10);
+
+    const story = await storyService.getStorySummaryByUserAndVanity(username, vanity);
+    if (!story || story.user_id !== req.session.userId) {
+        return res.status(403).render('error', { message: 'Forbidden' });
+    }
+
     try {
-        const story = await db.table('story_summary')
-            .whereField('username', username)
-            .whereField('vanity', vanity)
-            .first();
-        if (!story || story.user_id !== req.session.userId) {
-            return res.status(403).render('error', { message: 'Forbidden' });
-        }
-        await db.table('chapters')
-            .whereField('story_id', story.id)
-            .whereField('chapter_num', chapNum)
-            .delete();
+        await storyService.deleteChapter(story.id, chapNum);
         res.redirect(`/story/${username}/${vanity}`);
     } catch (err) {
         logger.error(`${loggingPrefix} Chapter delete error`, { error: err.message, stack: err.stack });
@@ -632,7 +488,7 @@ exports.validateRating = [
         .withMessage('Rating must be between 1 and 5 stars')
 ];
 
-// POST: rate story
+// POST: Submit a rating for a story if valid and authorized
 exports.rateStory = async (req, res) => {
     const errors = validationResult(req);
     const { username, vanity } = req.params;
@@ -646,49 +502,27 @@ exports.rateStory = async (req, res) => {
     const ratingValue = parseInt(req.body.rating);
 
     try {
-        const story = await db.table('story_summary')
-            .whereField('username', username)
-            .whereField('vanity', vanity)
-            .first();
-
-        if (!story) {
-            return res.redirect(`${redirectUrl}?error=${encodeURIComponent('Story not found')}`);
-        }
+        const story = await storyService.getStoryByUsernameAndVanity(username, vanity);
+        if (!story) return res.redirect(`${redirectUrl}?error=${encodeURIComponent('Story not found')}`);
 
         if (story.user_id === userId) {
             return res.redirect(`${redirectUrl}?error=${encodeURIComponent("You can't rate your own story")}`);
         }
 
-        const existingRating = await db.table('ratings')
-            .whereField('user_id', userId)
-            .whereField('story_id', story.id)
-            .first();
+        const existingRating = await storyService.getRating(userId, story.id);
 
         if (isNaN(ratingValue)) {
             if (existingRating) {
-                await db.table('ratings')
-                    .whereField('user_id', userId)
-                    .whereField('story_id', story.id)
-                    .delete();
+                await storyService.deleteRating(userId, story.id);
                 return res.redirect(`${redirectUrl}?success=${encodeURIComponent('Rating cleared successfully!')}`);
             }
             return res.redirect(`${redirectUrl}?info=${encodeURIComponent('No rating to clear')}`);
         }
 
         if (existingRating) {
-            await db.table('ratings')
-                .whereField('user_id', userId)
-                .whereField('story_id', story.id)
-                .update({
-                    rating: ratingValue,
-                    rated_at: new Date()
-                });
+            await storyService.updateRating(userId, story.id, ratingValue);
         } else {
-            await db.table('ratings').insert({
-                user_id: userId,
-                story_id: story.id,
-                rating: ratingValue
-            }).insertAndGet();
+            await storyService.insertRating(userId, story.id, ratingValue);
         }
 
         return res.redirect(`${redirectUrl}?success=${encodeURIComponent('Rating submitted successfully!')}`);
