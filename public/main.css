@@ -172,6 +172,79 @@ footer {
   color: rgb(40.8, 40.8, 40.8);
 }
 
+.gif-container {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: rgb(230.4638190955, 248.4361809045, 246.248241206);
+  border: 1px solid rgb(132.3190954774, 222.1809045226, 211.2412060302);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: -moz-fit-content;
+  width: fit-content;
+}
+.gif-container form {
+  display: flex;
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 1rem;
+}
+.gif-container form input[type=text] {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgb(132.3190954774, 222.1809045226, 211.2412060302);
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  font-size: 0.95rem;
+  outline: none;
+}
+.gif-container form input[type=text]:focus {
+  border-color: #2a9d8f;
+  box-shadow: 0 0 0 2px rgb(205.927638191, 241.872361809, 237.4964824121);
+}
+.gif-container form button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #2a9d8f;
+  border-radius: 0 6px 6px 0;
+  background: #2a9d8f;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.gif-container form button:hover {
+  background: rgb(37.8, 141.3, 128.7);
+}
+.gif-container form button:active {
+  transform: scale(0.98);
+}
+.gif-container .tenor-gif {
+  padding: 0.5rem;
+  background: white;
+  border: 1px solid rgb(156.8552763819, 228.7447236181, 219.9929648241);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(51, 51, 51, 0.1);
+  max-width: 100%;
+  overflow: hidden;
+}
+.gif-container .tenor-gif img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  animation: float 6s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

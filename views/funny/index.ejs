@@ -1,0 +1,15 @@
+<div class="gif-container">
+  <form method="GET" action="/funny">
+    <input type="text" name="q" value="<%= searchQuery %>" placeholder="Search GIFs…" />
+    <button type="submit">Go</button>
+  </form>
+  <% if (gifUrl) { %>
+  <div class="tenor-gif">
+    <img src="<%= gifUrl %>" alt="GIF for &quot;<%= searchQuery %>&quot;">
+  </div>
+  <% } %>
+</div>
+
+<script>
+  setHeading("a public api :)", "i couldn't find anything free that I needed for this kinda site")
+</script>

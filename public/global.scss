@@ -192,3 +192,91 @@ footer {
         color: color.scale($text-color, $lightness: -20%);
     }
 }
+
+// GIF display — only within .gif-container
+.gif-container {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: color.scale($primary-color, $lightness: 90%);
+    border: 1px solid color.scale($primary-color, $lightness: 50%);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: fit-content;
+
+    // Search form
+    form {
+        display: flex;
+        width: 100%;
+        max-width: 400px;
+        margin-bottom: 1rem;
+
+        input[type="text"] {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid color.scale($primary-color, $lightness: 50%);
+            border-right: none;
+            border-radius: 6px 0 0 6px;
+            font-size: 0.95rem;
+            outline: none;
+
+            &:focus {
+                border-color: $primary-color;
+                box-shadow: 0 0 0 2px color.scale($primary-color, $lightness: 80%);
+            }
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: 1px solid $primary-color;
+            border-radius: 0 6px 6px 0;
+            background: $primary-color;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+
+            &:hover {
+                background: color.scale($primary-color, $lightness: -10%);
+            }
+
+            &:active {
+                transform: scale(0.98);
+            }
+        }
+    }
+
+    // GIF image
+    .tenor-gif {
+        padding: 0.5rem;
+        background: white;
+        border: 1px solid color.scale($primary-color, $lightness: 60%);
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba($text-color, 0.1);
+        max-width: 100%;
+        overflow: hidden;
+
+        img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            animation: float 6s ease-in-out infinite;
+        }
+    }
+
+    // subtle floating animation
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-8px);
+        }
+    }
+}
