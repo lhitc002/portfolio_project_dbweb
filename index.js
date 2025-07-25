@@ -80,14 +80,10 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use((req, res, next) => {
-    const protocol = req.protocol;
-    const host = req.get('host');
-    const originalUrl = req.originalUrl;
+app.locals.baseUrl = process.env.BASE_URL || `http://localhost:${port}`;
 
-    const baseUrl = `${protocol}://${host}${req.baseUrl}`;
-    res.locals.baseUrl = baseUrl;
-    console.log(baseUrl);  // Logs: http://www.doc.gold.ac.uk/usr/326
+app.use((req, res, next) => {
+    res.locals.baseUrl = app.locals.baseUrl;
     next();
 });
 
