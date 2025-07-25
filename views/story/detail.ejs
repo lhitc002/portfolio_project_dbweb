@@ -3,7 +3,7 @@
     <%= story.title %>
   </h1>
   <p class="author">by <strong>
-      <a href="/users/<%= story.username %>"><%= story.username %></a>
+      <a href="../users/<%= story.username %>"><%= story.username %></a>
     </strong></p>
 
   <% if (story.synopsis) { %>
@@ -26,7 +26,7 @@
   </div>
 
   <% if (session.userId && session.userId !== story.user_id) { %>
-  <form action="/story/<%= story.username %>/<%= story.vanity %>/rate" method="POST" class="user-rating" aria-label="Rate story">
+  <form action="../story/<%= story.username %>/<%= story.vanity %>/rate" method="POST" class="user-rating" aria-label="Rate story">
     <h3 style="display:inline-block; margin-right:1rem;">Your Rating</h3>
     <div class="star-rating" role="radiogroup" aria-label="Star rating" style="display:inline-flex; align-items:center;">
       <% for (let i = 5; i >= 1; i--) { %>
@@ -81,13 +81,13 @@
 
   <% if (session.userId === story.user_id) { %>
   <div class="story-actions button-group">
-    <a href="/story/<%= story.username %>/<%= story.vanity %>/edit" class="btn btn-secondary">Edit Story</a>
+    <a href="../story/<%= story.username %>/<%= story.vanity %>/edit" class="btn btn-secondary">Edit Story</a>
 
     <a href="#" class="btn btn-secondary" onclick="event.preventDefault(); if (confirm('Delete this story?')) { document.getElementById('delete-form').submit(); }">
       Delete Story
     </a>
 
-    <form id="delete-form" action="/story/<%= story.username %>/<%= story.vanity %>/delete" method="POST" style="display: none;"></form>
+    <form id="delete-form" action="../story/<%= story.username %>/<%= story.vanity %>/delete" method="POST" style="display: none;"></form>
   </div>
 
   <% } %>
@@ -96,14 +96,14 @@
     <h3>Chapters</h3>
 
     <% if (session.userId === story.user_id) { %>
-    <a href="/story/<%= story.username %>/<%= story.vanity %>/chapter/add" class="btn btn-primary mb-2">Add Chapter</a>
+    <a href="../story/<%= story.username %>/<%= story.vanity %>/chapter/add" class="btn btn-primary mb-2">Add Chapter</a>
     <% } %>
 
     <% if (chapters && chapters.length > 0) { %>
     <ol class="chapter-list">
       <% chapters.forEach(chapter => { %>
       <li>
-        <a href="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>">
+        <a href="../story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>">
           <% if (chapter.title) { %>
           Chapter <%= chapter.chapter_num %>: <%= chapter.title %>
           <% } else { %>
@@ -116,13 +116,13 @@
 
         <% if (session.userId === story.user_id) { %>
         <span class="chapter-actions" style="margin-left: 10px;">
-          <a href="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/edit" class="btn btn-sm btn-secondary">Edit</a>
+          <a href="../story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/edit" class="btn btn-sm btn-secondary">Edit</a>
 
           <a href="#" class="btn btn-sm btn-secondary" onclick="event.preventDefault(); if (confirm('Delete this chapter?')) { document.getElementById('delete-chapter-<%= chapter.chapter_num %>').submit(); }">
             Delete
           </a>
 
-          <form id="delete-chapter-<%= chapter.chapter_num %>" action="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/delete" method="POST" style="display: none;"></form>
+          <form id="delete-chapter-<%= chapter.chapter_num %>" action="../story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/delete" method="POST" style="display: none;"></form>
         </span>
         <% } %>
       </li>

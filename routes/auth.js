@@ -21,7 +21,7 @@ exports.loginPost = async (req, res) => {
 
     if (result.success) {
         logger.info(`${logPrefix} Login successful: ${req.session.username} (ID: ${req.session.userId})`);
-        return res.redirect(`/users/${req.session.username}`);
+        return res.redirect(`../users/${req.session.username}`);
     }
 
     logger.warn(`${logPrefix} Login failed: ${result.error}`);
@@ -44,7 +44,7 @@ exports.registerPost = async (req, res) => {
 
     if (result.success) {
         logger.info(`${logPrefix} Registration successful: ${req.session.username} (ID: ${req.session.userId})`);
-        return res.redirect(`/users/${req.session.username}`);
+        return res.redirect(`../users/${req.session.username}`);
     }
 
     logger.warn(`${logPrefix} Registration failed: ${result.error}`);

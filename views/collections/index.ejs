@@ -4,7 +4,7 @@
   <ul>
     <% collections.forEach(col => { %>
     <li>
-      <a href="/collections/<%= col.user_id %>/<%= col.id %>">
+      <a href="../collections/<%= col.user_id %>/<%= col.id %>">
         <%= col.title %>
       </a>
       (<%= col.story_count || 0 %> stories)

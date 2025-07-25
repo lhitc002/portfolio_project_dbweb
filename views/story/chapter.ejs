@@ -1,23 +1,23 @@
 <div class="chapter-reader">
   <div class="chapter-header">
     <div class="breadcrumb">
-      <a href="/story">Stories</a> >
-      <a href="/story/<%= story.username %>/<%= story.vanity %>"><%= story.title %></a> >
+      <a href="../story">Stories</a> >
+      <a href="../story/<%= story.username %>/<%= story.vanity %>"><%= story.title %></a> >
       Chapter <%= chapter.chapter_num %>
     </div>
     <h1><% if (chapter.title) { %><%= chapter.title %><% } else { %>Chapter <%= chapter.chapter_num %><% } %></h1>
     <p class="story-title">from <strong><%= story.title %></strong> by <%= story.username %></p>
   </div>
   <div class="chapter-navigation">
-    <% if (prevChapter) { %><a href="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= prevChapter.chapter_num %>" class="nav-button prev">← Previous Chapter</a><% } %>
-    <a href="/story/<%= story.username %>/<%= story.vanity %>" class="nav-button contents">Table of Contents</a>
-    <% if (nextChapter) { %><a href="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= nextChapter.chapter_num %>" class="nav-button next">Next Chapter →</a><% } %>
+    <% if (prevChapter) { %><a href="../story/<%= story.username %>/<%= story.vanity %>/chapter/<%= prevChapter.chapter_num %>" class="nav-button prev">← Previous Chapter</a><% } %>
+    <a href="../story/<%= story.username %>/<%= story.vanity %>" class="nav-button contents">Table of Contents</a>
+    <% if (nextChapter) { %><a href="../story/<%= story.username %>/<%= story.vanity %>/chapter/<%= nextChapter.chapter_num %>" class="nav-button next">Next Chapter →</a><% } %>
   </div>
   <div class="chapter-content"><%- chapter.formattedContent %></div>
   <div class="chapter-navigation">
-    <% if (prevChapter) { %><a href="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= prevChapter.chapter_num %>" class="nav-button prev">← Previous Chapter</a><% } %>
-    <a href="/story/<%= story.username %>/<%= story.vanity %>" class="nav-button contents">Table of Contents</a>
-    <% if (nextChapter) { %><a href="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= nextChapter.chapter_num %>" class="nav-button next">Next Chapter →</a><% } %>
+    <% if (prevChapter) { %><a href="../story/<%= story.username %>/<%= story.vanity %>/chapter/<%= prevChapter.chapter_num %>" class="nav-button prev">← Previous Chapter</a><% } %>
+    <a href="../story/<%= story.username %>/<%= story.vanity %>" class="nav-button contents">Table of Contents</a>
+    <% if (nextChapter) { %><a href="../story/<%= story.username %>/<%= story.vanity %>/chapter/<%= nextChapter.chapter_num %>" class="nav-button next">Next Chapter →</a><% } %>
   </div>
   <div class="chapter-info">
     <p>Published: <%= new Date(chapter.created_at).toLocaleDateString() %></p>
@@ -117,7 +117,7 @@
       if ($parent.length) ss.setItem('targetCommentId', $parent.data('comment-id'));
       $('<form>', {
         method: 'POST',
-        action: `/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/comments/${commentId}/delete`
+        action: `../story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/comments/${commentId}/delete`
       }).appendTo('body').submit();
     });
 

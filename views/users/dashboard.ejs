@@ -25,7 +25,7 @@
       <%= user.id == session.userId ? 'My Stories' : `${user.username}'s Stories` %>
     </h2>
     <% if (user.id == session.userId) { %>
-    <a href="/story/create" class="btn btn-create">
+    <a href="../story/create" class="btn btn-create">
       <span class="btn-icon">✏️</span>
       Create New Story
     </a>
@@ -35,7 +35,7 @@
       <% stories.forEach(story=> { %>
       <div class="story-item">
         <h3>
-          <a href="/story/<%= user.username %>/<%= story.vanity %>">
+          <a href="../story/<%= user.username %>/<%= story.vanity %>">
             <%= story.title %>
           </a>
         </h3>
@@ -75,7 +75,7 @@
       <%= user.id == session.userId ? 'My Collections' : `${user.username}'s Collections` %>
     </h2>
     <% if (user.id == session.userId) { %>
-    <a href="/collections/create" class="btn btn-create">
+    <a href="../collections/create" class="btn btn-create">
       <span class="btn-icon">✏️</span>
       Create New Collection
     </a>
@@ -86,7 +86,7 @@
       <% collections.forEach(collection=> { %>
       <div class="collection-item">
         <h3>
-          <a href="/collections/<%= user.id %>/<%= collection.id %>">
+          <a href="../collections/<%= user.id %>/<%= collection.id %>">
             <%= collection.title %>
           </a>
         </h3>

@@ -152,7 +152,7 @@ exports.createStory = async (req, res) => {
             vanity: createdStory.vanity
         });
 
-        res.redirect(`/story/${username}/${createdStory.vanity}`);
+        res.redirect(`../story/${username}/${createdStory.vanity}`);
     } catch (err) {
         logger.error(`${loggingPrefix} Story creation error`, { error: err.message, stack: err.stack });
         res.render('story/create', {
@@ -210,7 +210,7 @@ exports.updateStory = async (req, res) => {
 
     const updatedStory = await storyService.getStoryById(story.id);
 
-    res.redirect(`/story/${username}/${updatedStory.vanity}`);
+    res.redirect(`../story/${username}/${updatedStory.vanity}`);
 };
 
 // POST: Delete an existing story if authorized
@@ -394,7 +394,7 @@ exports.createChapter = async (req, res) => {
         }
 
         await storyService.createChapter(story.id, chapNum, req.body.title, req.body.content);
-        res.redirect(`/story/${username}/${vanity}`);
+        res.redirect(`../story/${username}/${vanity}`);
     } catch (err) {
         logger.error(`${loggingPrefix} Chapter create error`, { error: err.message, stack: err.stack });
         res.render('chapter/create', {
@@ -454,7 +454,7 @@ exports.updateChapter = async (req, res) => {
 
     try {
         await storyService.updateChapter(story.id, chapNum, req.body);
-        res.redirect(`/story/${username}/${vanity}/chapter/${chapNum}`);
+        res.redirect(`../story/${username}/${vanity}/chapter/${chapNum}`);
     } catch (err) {
         logger.error(`${loggingPrefix} Chapter update error`, { error: err.message, stack: err.stack });
         res.render('chapter/edit', { title: 'Edit Chapter', errors: ['Error updating chapter'], formData: req.body });
@@ -473,7 +473,7 @@ exports.deleteChapter = async (req, res) => {
 
     try {
         await storyService.deleteChapter(story.id, chapNum);
-        res.redirect(`/story/${username}/${vanity}`);
+        res.redirect(`../story/${username}/${vanity}`);
     } catch (err) {
         logger.error(`${loggingPrefix} Chapter delete error`, { error: err.message, stack: err.stack });
         res.status(500).render('error', { message: 'Error deleting chapter' });
@@ -493,7 +493,7 @@ exports.rateStory = async (req, res) => {
     const errors = validationResult(req);
     const { username, vanity } = req.params;
     const userId = req.session.userId;
-    const redirectUrl = `/story/${username}/${vanity}`;
+    const redirectUrl = `../story/${username}/${vanity}`;
 
     if (!errors.isEmpty()) {
         return res.redirect(`${redirectUrl}?error=${encodeURIComponent(errors.array()[0].msg)}`);

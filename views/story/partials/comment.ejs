@@ -1,6 +1,6 @@
 <div class="comment" data-comment-id="<%= comment.id %>" style="margin-left: <%= (depth || 0) * 20 %>px;">
   <div class="comment-header">
-    <a href="/users/<%= comment.username %>"><strong><%= comment.username %></strong></a>
+    <a href="../users/<%= comment.username %>"><strong><%= comment.username %></strong></a>
     <span class="comment-date" title="<%= formatRawDate(comment.created_at) %>">
       <%= timeAgo(comment.created_at) %>
     </span>
