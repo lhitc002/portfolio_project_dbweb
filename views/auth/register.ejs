@@ -23,7 +23,7 @@
   </form>
 
   <p class="text-center">
-    Already have an account? <a href="/auth/login">Log in</a>
+    Already have an account? <a href="<%= baseUrl %>/auth/login">Log in</a>
   </p>
 </div>
 
@@ -43,14 +43,14 @@
 
       try {
         const response = await $.ajax({
-          url: '../api/auth/register',
+          url: '<%= baseUrl %>/api/auth/register',
           type: 'POST',
           contentType: 'application/json',
           data: JSON.stringify(formData)
         });
 
         if (response.success) {
-          window.location.href = `/users/${response.user.username}`;
+          window.location.href = `<%= baseUrl %>/users/${response.user.username}`;
         } else {
           $('#register-error').text(response.error).show();
         }
