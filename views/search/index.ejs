@@ -49,7 +49,7 @@
         </a>
         <% } else if (category === 'comments') { %>
         <a href="/story/<%= item.story_author_username %>/<%= item.story_vanity %>/chapter/<%= item.chapter_num %>#comment-<%= item.id %>">
-          Comment #<%= item.id %>
+          <%= item.story_author_username %>: <%= item.content %>
         </a>
         <% } else if (category === 'chapters') { %>
         <a href="/story/<%= item.story_author_username %>/<%= item.story_vanity %>/chapter/<%= item.chapter_num %>">

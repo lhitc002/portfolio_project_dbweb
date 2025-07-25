@@ -1,9 +1,7 @@
-const db = require('../utils/queryBuilder');
-const realDb = require('../config/db');
+const searchService = require('../services/searchService');
+const logger = require('../logger');
 
-// Escape % and _ for safe LIKE queries
-const escapeLike = (str) =>
-    str.replace(/[%_\\]/g, (ch) => `\\${ch}`);
+const logPrefix = '[SEARCH]';
 
 exports.index = (req, res) => {
     res.render('search/index', {
@@ -14,111 +12,33 @@ exports.index = (req, res) => {
 
 exports.results = async (req, res) => {
     const rawQ = req.query.q || '';
-    const likeQ = `%${escapeLike(rawQ)}%`;
+    const likeQ = `%${searchService.escapeLike(rawQ)}%`;
     let types = Array.isArray(req.query.types) ? req.query.types : [];
     if (!types.length) {
         types = ['users', 'stories', 'collections', 'comments', 'chapters'];
     }
 
-    console.log('[SEARCH] Running search for:', rawQ, 'types:', types);
+    logger.info(`${logPrefix} Running search for: ${rawQ} 'types: ${types}`);
 
     try {
         const tasks = [];
+        const searchMap = {
+            users: searchService.searchUsers,
+            stories: searchService.searchStories,
+            collections: searchService.searchCollections,
+            comments: searchService.searchComments,
+            chapters: searchService.searchChapters
+        };
 
-        // USERS
-        if (types.includes('users')) {
-            console.log('[SEARCH] Querying users...');
-            tasks.push(
-                db.table('users')
-                    .select(['id', 'username'])
-                    .whereRaw('username LIKE ?', [likeQ])
-                    .get()
-                    .then(rows => ({ users: rows }))
-            );
-        }
-
-        // STORIES
-        if (types.includes('stories')) {
-            console.log('[SEARCH] Querying stories...');
-            tasks.push(
-                db.table('stories as s')
-                    .select([
-                        's.id',
-                        's.title',
-                        's.user_id',
-                        's.vanity as story_vanity',
-                        'u.username as author_username'
-                    ])
-                    .join('users as u', 's.user_id = u.id')
-                    .whereRaw('(s.title LIKE ? OR s.synopsis LIKE ?)', [likeQ, likeQ])
-                    .get()
-                    .then(rows => ({ stories: rows }))
-            );
-        }
-
-        // COLLECTIONS
-        if (types.includes('collections')) {
-            console.log('[SEARCH] Querying collections...');
-            tasks.push(
-                db.table('collections as col')
-                    .select([
-                        'col.id',
-                        'col.title',
-                        'col.user_id',
-                        'u.username as owner_username'
-                    ])
-                    .join('users as u', 'col.user_id = u.id')
-                    .whereRaw('col.title LIKE ?', [likeQ])
-                    .get()
-                    .then(rows => ({ collections: rows }))
-            );
-        }
-
-        // COMMENTS
-        if (types.includes('comments')) {
-            console.log('[SEARCH] Querying comments...');
-            tasks.push(
-                db.table('comments as c')
-                    .select([
-                        'c.id',
-                        'c.chapter_id',
-                        'c.content',
-                        'ch.story_id',
-                        's.user_id',
-                        'ch.chapter_num',
-                        's.vanity as story_vanity',
-                        'u.username as story_author_username'
-                    ])
-                    .join('chapters as ch', 'c.chapter_id = ch.id')
-                    .join('stories as s', 'ch.story_id = s.id')
-                    .join('users as u', 's.user_id = u.id')
-                    .whereRaw('c.content LIKE ?', [likeQ])
-                    .get()
-                    .then(rows => ({ comments: rows }))
-            );
-        }
-
-        // CHAPTERS
-        if (types.includes('chapters')) {
-            console.log('[SEARCH] Querying chapters...');
-            tasks.push(
-                db.table('chapters as ch')
-                    .select([
-                        'ch.id',
-                        'ch.story_id',
-                        'ch.title',
-                        'ch.chapter_num',
-                        's.user_id',
-                        's.vanity as story_vanity',
-                        'u.username as story_author_username'
-                    ])
-                    .join('stories as s', 'ch.story_id = s.id')
-                    .join('users as u', 's.user_id = u.id')
-                    .whereRaw('(ch.title LIKE ? OR ch.content LIKE ?)', [likeQ, likeQ])
-                    .get()
-                    .then(rows => ({ chapters: rows }))
-            );
-        }
+        types.forEach(type => {
+            if (searchMap[type]) {
+                logger.info(`${logPrefix} Querying ${type}...`);
+                tasks.push(
+                    searchMap[type](likeQ)
+                        .then(results => ({ [type]: results }))
+                );
+            }
+        });
 
         // Await all
         const parts = await Promise.all(tasks);
@@ -141,7 +61,7 @@ exports.results = async (req, res) => {
         });
     }
     catch (err) {
-        console.error('[SEARCH] Error running results:', err);
+        logger.error(`${logPrefix} Error running results:`, { error: err });
         if (req.xhr || (req.get('Accept') || '').includes('json')) {
             return res.status(500).json({ error: 'Search failed' });
         }
