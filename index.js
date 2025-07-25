@@ -86,6 +86,11 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use((req, res, next) => {
+    res.locals.baseUrl = req.protocol + '://' + req.get('host');
+    next();
+});
+
 // Dynamically load the route handlers
 loadRoutes(app);
 
