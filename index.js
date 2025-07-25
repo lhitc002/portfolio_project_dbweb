@@ -80,6 +80,12 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use((req, res, next) => {
+    const baseUrl = req.protocol + '://' + req.get('host');
+    console.log('Base URL:', baseUrl);
+    next();
+});
+
 // Dynamically load the route handlers
 loadRoutes(app);
 
