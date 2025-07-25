@@ -60,6 +60,12 @@ app.locals.appData = {
     appName: process.env.APP_NAME || 'Unnamed App'
 };
 
+app.use((req, res, next) => {
+    const depth = req.path.split('/').filter(Boolean).length; // count segments ignoring empty
+    res.locals.relativePrefix = '../'.repeat(depth);
+    next();
+});
+
 // Dynamically load the route handlers
 loadRoutes(app);
 
