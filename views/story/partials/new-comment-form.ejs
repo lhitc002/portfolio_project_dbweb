@@ -1,6 +1,6 @@
 <div class="new-comment">
   <h4>Add a comment</h4>
-  <form action="../story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/comments" method="POST">
+  <form action="/story/<%= story.username %>/<%= story.vanity %>/chapter/<%= chapter.chapter_num %>/comments" method="POST">
     <textarea name="content" placeholder="Write your comment here..." rows="4" required></textarea>
     <br>
     <button type="submit" class="submit-comment">Submit</button>
