@@ -18,14 +18,14 @@ const authService = {
     },
 
     async createUser(userData) {
-        return db.table('users')
+        const result = await db.table('users')
             .insert({
                 username: userData.username,
                 email: userData.email,
                 password_hash: userData.password_hash,
                 created_at: new Date()
-            })
-            .insertAndGet();
+            }).insertAndGet();
+        return result;
     },
 
     async comparePasswords(plainPassword, hashedPassword) {

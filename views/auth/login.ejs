@@ -1,6 +1,6 @@
 <section class="login-form">
   <h2>Login</h2>
-  <p class="error" id="login-error" style="display: none;"></p>
+  <div id="login-error" class="alert alert-error" style="display: none;"></div>
 
   <form id="login-form">
     <div class="form-group">
@@ -14,34 +14,39 @@
     <button class="btn btn-primary" type="submit">Log In</button>
   </form>
 
+  <p class="text-center">
+    Don't have an account? <a href="/auth/register">Register</a>
+  </p>
 </section>
 
 <script>
-  document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const errorEl = document.getElementById('login-error');
-    errorEl.style.display = 'none';
-    errorEl.textContent = '';
+  $(document).ready(function() {
+    $('#login-form').submit(async function(e) {
+      e.preventDefault();
+      $('#login-error').hide().text('');
 
-    const formData = new FormData(e.target);
-    const payload = Object.fromEntries(formData.entries());
+      const formData = {
+        email: $('#email').val(),
+        password: $('#password').val()
+      };
 
-    const res = await fetch('/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(payload)
+      try {
+        const response = await $.ajax({
+          url: '/api/auth/login',
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify(formData)
+        });
+
+        if (response.success) {
+          window.location.href = `/users/${response.user.username}`;
+        } else {
+          $('#login-error').text(response.error).show();
+        }
+      } catch (error) {
+        const errMsg = error.responseJSON?.error || 'Login failed';
+        $('#login-error').text(errMsg).show();
+      }
     });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      errorEl.textContent = data.error || 'Login failed';
-      errorEl.style.display = 'block';
-    } else {
-      window.location.href = data.redirect || '/';
-    }
   });
 </script>

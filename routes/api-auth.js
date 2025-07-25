@@ -1,4 +1,4 @@
-// api-auth.js controller
+// api-auth.js
 const { body, validationResult } = require('express-validator');
 const logger = require('../logger');
 const authService = require('../services/authService');
@@ -23,65 +23,61 @@ exports.validateLogin = [
     body('password').notEmpty().withMessage('Password is required.')
 ];
 
-// ---- API Handlers ----
-exports.login = async (req, res) => {
-    logger.info(`${logPrefix} POST /api/login - Handling API login`);
-
+// ---- Core Authentication Logic ----
+exports.coreLogin = async (req) => {
     const errors = validationResult(req);
     const email = req.sanitize(req.body.email);
     const password = req.sanitize(req.body.password);
 
     if (!errors.isEmpty()) {
-        const errorMsg = errors.array().map(e => e.msg).join(' ');
-        logger.warn(`${logPrefix} Validation failed: ${errorMsg}`);
-        return res.status(400).json({ error: errorMsg });
+        return {
+            status: 400,
+            error: errors.array().map(e => e.msg).join(' ')
+        };
     }
 
     try {
         const user = await authService.getUserByEmail(email);
-
         if (!user) {
-            logger.warn(`${logPrefix} Invalid login attempt for email: ${email}`);
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return { status: 401, error: 'Invalid email or password.' };
         }
 
         const valid = await authService.comparePasswords(password, user.password_hash);
         if (!valid) {
-            logger.warn(`${logPrefix} Password mismatch for user: ${user.id}`);
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return { status: 401, error: 'Invalid email or password.' };
         }
 
         req.session.userId = user.id;
         req.session.username = user.username;
 
-        logger.info(`${logPrefix} API login successful for user: ${user.id}`);
-        return res.json({
+        return {
+            status: 200,
             success: true,
             user: { id: user.id, username: user.username }
-        });
+        };
     } catch (err) {
         logger.error(`${logPrefix} Login error: ${err.message}`, { stack: err.stack });
-        return res.status(500).json({ error: 'Internal server error' });
+        return { status: 500, error: 'Server error. Please try again later.' };
     }
 };
 
-exports.register = async (req, res) => {
-    logger.info(`${logPrefix} POST /api/register - Handling API registration`);
+exports.coreRegister = async (req) => {
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
-        const errorMsg = errors.array().map(e => e.msg).join(' ');
-        logger.warn(`${logPrefix} Validation errors: ${errorMsg}`);
-        return res.status(400).json({ error: errorMsg });
+        return {
+            status: 400,
+            error: errors.array().map(e => e.msg).join(' ')
+        };
     }
 
-    const { username, email, password } = req.body;
+    const username = req.sanitize(req.body.username);
+    const email = req.sanitize(req.body.email);
+    const password = req.sanitize(req.body.password);
 
     try {
         const emailExists = await authService.emailExists(email);
         if (emailExists) {
-            logger.warn(`${logPrefix} Email conflict: ${email}`);
-            return res.status(409).json({ error: 'Email already in use' });
+            return { status: 400, error: 'Email already in use.' };
         }
 
         const hash = await authService.hashPassword(password);
@@ -98,40 +94,56 @@ exports.register = async (req, res) => {
         req.session.userId = user.id;
         req.session.username = user.username;
 
-        logger.info(`${logPrefix} API registration success: ${user.id}`);
-        return res.status(201).json({
+        return {
+            status: 201,
             success: true,
             user: { id: user.id, username: user.username }
-        });
+        };
     } catch (err) {
         logger.error(`${logPrefix} Registration error: ${err.message}`, { stack: err.stack });
 
-        const status = err.code === '23505' ? 409 : 500;
-        const message = err.code === '23505'
-            ? 'Username or email already exists'
-            : 'Internal server error';
+        const errorMsg = err.code === '23505'
+            ? 'Email or username already in use.'
+            : 'Server error. Please try again later.';
 
-        return res.status(status).json({ error: message });
+        return { status: 500, error: errorMsg };
     }
 };
 
-exports.logout = (req, res) => {
-    logger.info(`${logPrefix} POST /api/logout - Handling API logout`);
-    req.session.destroy((err) => {
-        if (err) {
-            logger.error(`${logPrefix} Logout error: ${err.message}`, { stack: err.stack });
-            return res.status(500).json({ error: 'Logout failed' });
-        }
-
-        res.clearCookie('connect.sid', { path: '/' });
-        logger.info(`${logPrefix} API logout successful`);
-        return res.json({ success: true });
+exports.coreLogout = (req) => {
+    return new Promise((resolve) => {
+        req.session.destroy((err) => {
+            if (err) {
+                logger.error(`${logPrefix} Logout error: ${err.message}`, { stack: err.stack });
+                resolve({ status: 500, error: 'Logout failed' });
+            } else {
+                resolve({ status: 200, success: true });
+            }
+        });
     });
 };
 
-// Route configuration
+// ---- API Endpoint Handlers ----
+exports.login = async (req, res) => {
+    const result = await this.coreLogin(req);
+    res.status(result.status).json(result);
+};
+
+exports.register = async (req, res) => {
+    const result = await this.coreRegister(req);
+    res.status(result.status).json(result);
+};
+
+exports.logout = async (req, res) => {
+    const result = await this.coreLogout(req);
+    if (result.success) {
+        res.clearCookie('connect.sid', { path: '/' });
+    }
+    res.status(result.status).json(result);
+};
+
 exports.routes = {
-    'POST /login': ['validateLogin', 'login'],
-    'POST /register': ['validateRegister', 'register'],
-    'POST /logout': 'logout'
+    'POST /login': [...this.validateLogin, this.login],
+    'POST /register': [...this.validateRegister, this.register],
+    'POST /logout': this.logout
 };
