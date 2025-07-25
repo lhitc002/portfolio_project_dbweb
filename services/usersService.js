@@ -1,6 +1,13 @@
 const db = require('../utils/queryBuilder');
 
 const usersService = {
+    async getUserById(userId) {
+        return db.table('users')
+            .select(['id', 'username', 'email', 'created_at'])
+            .whereField('id', userId)
+            .first();
+    },
+
     async getUserByUsername(username) {
         return db.table('users')
             .select(['id', 'username', 'email', 'created_at'])
