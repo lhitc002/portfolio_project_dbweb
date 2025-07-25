@@ -12,7 +12,7 @@ exports.validateLogin = apiAuth.validateLogin;
 // ---- Login ----
 exports.loginForm = (req, res) => {
     logger.info(`${logPrefix} GET /login - Rendering login form`);
-    res.render(`${baseUrl}/auth/login`, { error: null, formData: {} });
+    res.render(`auth/login`, { error: null, formData: {} });
 };
 
 exports.loginPost = async (req, res) => {
