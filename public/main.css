@@ -147,6 +147,8 @@ footer {
   flex-direction: column;
   justify-content: space-between;
   text-decoration: none;
+  margin-bottom: 5px;
+  margin-top: 5px;
 }
 .story-card:hover {
   transform: translateY(-4px) scale(1.02);
