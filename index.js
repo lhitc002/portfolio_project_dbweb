@@ -9,6 +9,7 @@ const session = require('express-session');
 const expressSanitizer = require('express-sanitizer');
 const MySQLStore = require('express-mysql-session')(session);
 const loadRoutes = require('./routeLoader');
+const cors = require('cors');
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -20,6 +21,14 @@ const sessionStore = new MySQLStore({
     password: process.env.DB_PASS,
     database: process.env.DB_NAME
 });
+
+// CORS configuration
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || 'https://www.doc.gold.ac.uk',
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 // 1) mount express session
 app.use(session({
