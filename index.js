@@ -23,8 +23,21 @@ const sessionStore = new MySQLStore({
 });
 
 // CORS configuration
+const allowedOrigins = [
+  'http://www.doc.gold.ac.uk',
+  'https://www.doc.gold.ac.uk'
+];
+
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'https://www.doc.gold.ac.uk',
+  origin: (origin, callback) => {
+    // allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 };
 
