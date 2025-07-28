@@ -23,13 +23,19 @@
   </form>
 
   <p class="text-center">
-    Already have an account? <a href="<%= baseUrl %>/auth/login">Log in</a>
+    Already have an account? <a id="login-link" href="#">Log in</a>
   </p>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
   $(document).ready(function() {
+    const rawBaseUrl = '<%= baseUrl %>';
+    const currentProtocol = window.location.protocol;
+    const baseUrl = rawBaseUrl.replace(/^https?:/, currentProtocol);
+
+    $('#login-link').attr('href', `${baseUrl}/auth/login`);
+
     $('#register-form').submit(async function(e) {
       e.preventDefault();
       $('#register-error').hide().text('');
@@ -43,14 +49,14 @@
 
       try {
         const response = await $.ajax({
-          url: '<%= baseUrl %>/api/auth/register',
+          url: `${baseUrl}/api/auth/register`,
           type: 'POST',
           contentType: 'application/json',
           data: JSON.stringify(formData)
         });
 
         if (response.success) {
-          window.location.href = `<%= baseUrl %>/users/${response.user.username}`;
+          window.location.href = `${baseUrl}/users/${response.user.username}`;
         } else {
           $('#register-error').text(response.error).show();
         }
